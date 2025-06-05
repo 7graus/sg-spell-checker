@@ -370,28 +370,11 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
 
   return (
     <div className="block md:border md:border-gray-border-secondary md:rounded-lg md:shadow-lg md:bg-white mx-auto">
-      <div className="flex flex-row gap-2 justify-between md:justify-start md:gap-7 md:border-b md:border-gray-border-secondary md:px-4 py-2">
-        <OptionSelector
-          heading={t('style.label')}
-          options={styleOptions}
-          selectedValue={selectedStyle?.value || 'normal'}
-          onSelect={(option) => handleOptionSelect(option, 'style')}
-          isMobile={isMobile}
-          onOpenDrawer={handleDrawerOpen}
-        />
-        <OptionSelector
-          heading={t('creativity.label')}
-          options={creativityOptions}
-          selectedValue={selectedCreativity?.value || '2'}
-          onSelect={(option) => handleOptionSelect(option, 'creativity')}
-          isMobile={isMobile}
-          onOpenDrawer={handleDrawerOpen}
-        />
-      </div>
+
 
       {showWordInput && (
         <div className="flex flex-col md:flex-row border shadow-xl md:shadow-none rounded-lg md:rounded-none border-gray-border-secondary md:border-0 bg-white md:bg-transparent">
-          <div className="w-full md:w-1/2 flex flex-col justify-between">
+          <div className="w-full flex flex-col justify-between">
             <TiptapEditor
               value={editorValue}
               placeholder={isMobile ? t('general.info1-mobile') : t('general.info1-desktop')}
@@ -414,17 +397,7 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
               preventFocus={drawerOpen}
             />
           </div>
-          <div className="w-full md:w-1/2 flex flex-col justify-between relative">
-            <ResultsSection
-              results={results || { answer: '' }}
-              lastSelectedOption={lastSelectedOption}
-              projectId={projectId}
-              isPro={isPro}
-              onProModeClose={handleProModeClose}
-              logId={logId}
-              endpointFeedbackProject={endpointFeedbackProject}
-            />
-          </div>
+
           {isMobile && (
             <div
               className={`w-full p-2 flex items-center ${results ? 'justify-between' : 'justify-center'}`}

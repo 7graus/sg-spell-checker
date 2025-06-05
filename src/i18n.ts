@@ -5,22 +5,21 @@ const resources = {
   pt: {
     translation: {
       general: {
-        button: 'Reescrever',
         buttonTooltip:
-          'Desbloqueie o acesso <br> com <a data-track-click="cta_pro_click_reescrever_popup_feat_pro" href="https://www.sinonimos.com.br/assinar-pro/?utm_source=spell-checker&utm_medium=submitTooltip&utm_campaign=submitTooltip" class="{{ linkCssClass }}">Sinônimos PRO</a>',
+          'Desbloqueie o acesso <br> com <a data-track-click="cta_pro_click_corrigir_texto_popup_feat_pro" href="https://www.sinonimos.com.br/assinar-pro/?utm_source=spell-checker&utm_medium=submitTooltip&utm_campaign=submitTooltip" class="{{ linkCssClass }}">Sinônimos PRO</a>',
         copy: 'Copiar',
         clear: 'Limpar',
         copied: 'Copiado',
         usage: 'Utilizações',
         characters: 'Caracteres',
         paste: 'Colar texto',
-        'info1-mobile': 'Insira ou use o botão para colar. Depois, aperte Reescrever.',
+        'info1-mobile': 'Insira ou use o botão para colar. Depois, aperte Verificar Texto.',
         'info1-desktop':
-          'Insira ou cole seu texto (Ctrl + V) ou use o botão para colar. Depois, aperte Reescrever.',
+          'Insira ou cole seu texto (Ctrl + V) ou use o botão para colar. Depois, aperte Verificar Texto.',
         info2: 'Frase ou pequeno texto',
         info4: 'Seu texto aparecerá aqui...',
       },
-      title: 'Reescrever Textos',
+      title: 'Verificar Textos',
       options: {
         title: 'Escolha o estilo de escrita',
         formal: 'Formal',
@@ -34,8 +33,8 @@ const resources = {
       },
       editor: {
         main: {
-          label: 'Texto para reescrever',
-          placeholder: 'Digite ou cole o texto que você deseja reescrever...',
+          label: 'Texto para verificar',
+          placeholder: 'Digite ou cole o texto que você deseja verificar...',
         },
         exclude: {
           label: 'Palavras para excluir',
@@ -91,8 +90,8 @@ const resources = {
             'Alta: Texto reescrito com várias modificações, gerando um texto mais criativo.',
         },
       },
-      submit: 'Reescrever',
-      loading: 'Reescrevendo...',
+      submit: 'Verificar texto',
+      loading: 'Verificando texto...',
       results: {
         title: 'Resultados',
       },
@@ -131,9 +130,9 @@ const resources = {
         text1: 'Evolua sua escrita com o Sinônimos PRO',
         text2: 'Escreva sem limites, mais rápido e melhor',
         text_characters:
-          'Escreva sem limites, <a data-track-click="cta_pro_click_reescrever_editor_max_characters" href="https://www.sinonimos.com.br/assinar-pro/?utm_source=spell-checker&utm_medium=inlineMaxChars&utm_campaign=inlineMaxChars" class="{{ cssClass }}">desbloqueie o acesso completo!</a>',
+          'Escreva sem limites, <a data-track-click="cta_pro_click_corrigir_texto_editor_max_characters" href="https://www.sinonimos.com.br/assinar-pro/?utm_source=spell-checker&utm_medium=inlineMaxChars&utm_campaign=inlineMaxChars" class="{{ cssClass }}">desbloqueie o acesso completo!</a>',
         text_usage:
-          'Escreva sem limites, <a data-track-click="cta_pro_click_reescrever_editor_max_usage" href="https://www.sinonimos.com.br/assinar-pro/?utm_source=spell-checker&utm_medium=inlineMaxUsage&utm_campaign=inlineMaxUsage" class="{{ cssClass }}">desbloqueie o acesso completo!</a>',
+          'Escreva sem limites, <a data-track-click="cta_pro_click_corrigir_texto_editor_max_usage" href="https://www.sinonimos.com.br/assinar-pro/?utm_source=spell-checker&utm_medium=inlineMaxUsage&utm_campaign=inlineMaxUsage" class="{{ cssClass }}">desbloqueie o acesso completo!</a>',
         cta: 'Desbloquear acesso completo',
         popupUsage: {
           title: 'Você atingiu seu limite diário!',

@@ -10,7 +10,7 @@ interface AuthContextEvent extends CustomEvent {
 export function useAuthContext() {
   const [authContext, setAuthContext] = useState({
     isLogged: false,
-    isPro: true,
+    isPro: false,
   });
   const [isInitialized, setIsInitialized] = useState(false);
 

@@ -7,7 +7,7 @@ import { ShadowRoot } from './components/ShadowRoot';
 
 const mockAuthContext = {
   isAuthenticated: true,
-  isPro: true,
+  isPro: false,
   isLogged: true,
   isAdmin: false,
   isBlocked: false,

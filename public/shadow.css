@@ -2102,10 +2102,6 @@ video {
     min-height: 50vh;
   }
 
-  .md\:w-1\/2 {
-    width: 50%;
-  }
-
   .md\:w-\[calc\(100\%-1rem\)\] {
     width: calc(100% - 1rem);
   }

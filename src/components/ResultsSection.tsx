@@ -34,7 +34,7 @@ interface ResultsSectionProps {
 export const ResultsSection: React.FC<ResultsSectionProps> = ({ 
   results, 
   lastSelectedOption,
-  isPro = true,
+  isPro = false,
   projectId = '0',
   onProModeClose,
   logId,
