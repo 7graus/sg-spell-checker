@@ -28,7 +28,6 @@ function App() {
   return (
     <SgSpellChecker
       endpoint="https://api.example.com/spell-checker"
-      showWordInput={true}
       langCode="pt"
     />
   );
@@ -44,7 +43,6 @@ function App() {
 | endpointUpdAds | string | '' | API endpoint for updating ads |
 | endpointFeedback | string | '' | API endpoint for user feedback |
 | sitekey | string | '' | reCAPTCHA site key |
-| showWordInput | boolean | true | Show word exclusion input |
 | redirect | boolean | false | Enable redirection |
 | debug | boolean | false | Enable debug mode |
 | redirectPlaceholder | string | 'teste?w=to&w=$toRewrite' | Redirect URL template |

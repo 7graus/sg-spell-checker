@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AuthContext } from '../types';
+import { AuthContext, Results } from '../types';
 import { TiptapEditor } from './TiptapEditor';
 import { useResponsive } from '../hooks/useResponsive';
 import { getButtonStyles } from '../helpers/buttonStyles';
@@ -15,20 +15,14 @@ interface SgSpellCheckerProps {
   endpoint: string;
   projectId: string;
   tag: string;
-  showWordInput?: boolean;
   authContext: AuthContext;
   endpointFeedbackProject?: string;
-}
-
-interface Results {
-  answer: string;
 }
 
 export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
   endpoint,
   projectId,
   tag,
-  showWordInput = true,
   endpointFeedbackProject
 }) => {
   const { t } = useTranslation();
@@ -74,7 +68,7 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
     setLoading(true);
     setError(null);
     setLogId(null);
-    setResults({ answer: '' });
+    setResults(null);
 
     try {
       const response = await fetch(endpoint, {
@@ -92,51 +86,16 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
         throw new Error(data.error?.description || 'An error occurred');
       }
 
-      if (!response.body) {
-        throw new Error('ReadableStream not supported');
+      const dataJson = await response.json();
+      const data = dataJson.data;
+
+      console.log('data', data);
+      
+      if (data.errors) {
+        setResults({ errors: data.errors });
       }
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-      let currentText = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        
-        if (done) {
-          console.log('Stream complete');
-          break;
-        }
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const jsonStr = line.slice(6);
-            if (jsonStr === '[DONE]') {
-              console.log('Received DONE signal');
-              continue;
-            }
-            
-            try {
-              const data = JSON.parse(jsonStr);
-              console.log('Received chunk:', data);
-              
-              if (data.content) {
-                currentText += data.content;
-                setResults({ answer: currentText });
-              }
-              if (data.logId) {
-                setLogId(data.logId.toString());
-              }
-            } catch (e) {
-              console.error('Error parsing JSON:', e, 'Line:', line);
-            }
-          }
-        }
+      if (data.logId) {
+        setLogId(data.logId.toString());
       }
 
       if (!isPro) {
@@ -156,7 +115,7 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
 
   const isDisabled = isSubmitDisabled({
     loading,
-    editorValue: showWordInput ? editorValue : undefined,
+    editorValue: editorValue,
     isPro,
     maxChars: MAX_CHARS,
   });
@@ -168,72 +127,69 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
 
   return (
     <div className="block md:border md:border-gray-border-secondary md:rounded-lg md:shadow-lg md:bg-white mx-auto">
-
-
-      {showWordInput && (
-        <div className="flex flex-col md:flex-row border shadow-xl md:shadow-none rounded-lg md:rounded-none border-gray-border-secondary md:border-0 bg-white md:bg-transparent">
-          <div className="w-full flex flex-col justify-between">
-            <TiptapEditor
-              value={editorValue}
-              placeholder={isMobile ? t('general.info1-mobile') : t('general.info1-desktop')}
-              onChange={setEditorValue}
-              maxChars={MAX_CHARS}
-              isPro={isPro}
-              usageCount={usageCount}
-              maxUsage={maxUsage}
-              isLimitReached={isLimitReached}
-              isMobile={isMobile}
-              loading={loading}
-              onSubmit={handleSubmit}
-              isDisabled={isDisabled}
-              submitButtonRef={submitButtonRef}
-              warningUsageVisible={warningUsageVisible}
-              onClear={handleClear}
-            />
-          </div>
-
-          {isMobile && (
-            <div
-              className={`w-full p-2 flex items-center ${results ? 'justify-between' : 'justify-center'}`}
-            >
-              {results && logId && (
-                <UserFeedback
-                  endpoint="https://api.7gra.us/feedback/v1"
-                  projectId={Number(projectId)}
-                  contentType="spell-checker"
-                  contentTitle="Reescrever Textos"
-                  contentText={results?.answer || ''}
-                  contentUrl="/"
-                  contentId={1}
-                  projectName="Reescrever Textos"
-                  logId={logId}
-                  endpointFeedbackProject={endpointFeedbackProject}
-                />
-              )}
-              <button
-                ref={submitButtonRef}
-                type="button"
-                className={`${buttonStyles.cta.base} ${
-                  isDisabled ? buttonStyles.cta.disabled : buttonStyles.cta.enabled
-                }`}
-                onClick={handleSubmit}
-                disabled={isDisabled}
-              >
-                <div className={`${buttonStyles.cta.text}`}>
-                  {loading ? t('loading') : t('submit')}
-                </div>
-              </button>
-              {results && (
-                <CopyButton
-                  text={t('general.copy')}
-                  textCopied={t('general.copied')}
-                  value={results?.answer || ''}
-                />
-              )}
-            </div>
-          )}
+      <div className="flex flex-col md:flex-row border shadow-xl md:shadow-none rounded-lg md:rounded-none border-gray-border-secondary md:border-0 bg-white md:bg-transparent">
+        <div className="w-full flex flex-col justify-between">
+          <TiptapEditor
+            value={editorValue}
+            placeholder={isMobile ? t('general.info1-mobile') : t('general.info1-desktop')}
+            onChange={setEditorValue}
+            maxChars={MAX_CHARS}
+            isPro={isPro}
+            usageCount={usageCount}
+            maxUsage={maxUsage}
+            isLimitReached={isLimitReached}
+            isMobile={isMobile}
+            loading={loading}
+            onSubmit={handleSubmit}
+            isDisabled={isDisabled}
+            submitButtonRef={submitButtonRef}
+            warningUsageVisible={warningUsageVisible}
+            onClear={handleClear}
+            resultErrors={results || undefined}
+          />
         </div>
-      )}
+
+        {isMobile && (
+          <div
+            className={`w-full p-2 flex items-center ${results ? 'justify-between' : 'justify-center'}`}
+          >
+            {results && logId && (
+              <UserFeedback
+                endpoint="https://api.7gra.us/feedback/v1"
+                projectId={Number(projectId)}
+                contentType="spell-checker"
+                contentTitle="Reescrever Textos"
+                contentText={results?.errors.map(error => error.word).join(', ')}
+                contentUrl="/"
+                contentId={1}
+                projectName="Reescrever Textos"
+                logId={logId}
+                endpointFeedbackProject={endpointFeedbackProject}
+              />
+            )}
+            <button
+              ref={submitButtonRef}
+              type="button"
+              className={`${buttonStyles.cta.base} ${
+                isDisabled ? buttonStyles.cta.disabled : buttonStyles.cta.enabled
+              }`}
+              onClick={handleSubmit}
+              disabled={isDisabled}
+            >
+              <div className={`${buttonStyles.cta.text}`}>
+                {loading ? t('loading') : t('submit')}
+              </div>
+            </button>
+            {results && (
+              <CopyButton
+                text={t('general.copy')}
+                textCopied={t('general.copied')}
+                value={editorValue}
+              />
+            )}
+          </div>
+        )}
+      </div>
 
       {warningUsageVisible && (
         <div className="fixed inset-0 z-[9999]" id="conversion-popup-container">

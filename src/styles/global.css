@@ -1,4 +1,4 @@
-@tailwind base;
+/* @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -26,4 +26,5 @@
 
 .tiptap-editor.disabled .ProseMirror {
   @apply cursor-not-allowed;
-} 
+}  */
+

@@ -63,7 +63,6 @@ const App = () => {
             endpointFeedbackProject='https://sinonimos-br.test/api/index.php?method=toolFeedback'
             projectId="11"
             tag="development"
-            showWordInput={true}
             authContext={mockAuthContext}
           />
           {/* </div> */}

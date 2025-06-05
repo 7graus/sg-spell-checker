@@ -10,7 +10,6 @@ interface Props {
   endpoint: string;
   projectId: string;
   tag: string;
-  showWordInput?: boolean;
   authContext: AuthContext;
 }
 

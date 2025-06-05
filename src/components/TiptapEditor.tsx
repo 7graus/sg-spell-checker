@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { useEditorHeight } from '../hooks/useEditorHeight';
 import { SpellingErrorMark } from './editor-marks/SpellingErrorMark';
 import { GrammarErrorMark } from './editor-marks/GrammarErrorMark';
+import { Results, TextError } from '../types';
 
 interface TiptapEditorProps {
   value: string;
@@ -27,6 +28,7 @@ interface TiptapEditorProps {
   submitButtonRef?: React.RefObject<HTMLButtonElement>;
   warningUsageVisible?: boolean;
   onClear?: () => void;
+  resultErrors?: Results;
 }
 
 export const TiptapEditor: React.FC<TiptapEditorProps> = ({
@@ -44,12 +46,15 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
   isDisabled = false,
   submitButtonRef,
   onClear,
+  resultErrors,
 }) => {
   const [warningCharsVisible, setWarningCharsVisible] = useState(true);
   const [warningUsageVisible, setWarningUsageVisible] = useState(true);
   const editorRef = useRef<HTMLDivElement>(null);
   const defaultSubmitButtonRef = useRef<HTMLButtonElement>(null);
   const { editorHeight } = useEditorHeight({ isMobile, editorRef, submitButtonRef: submitButtonRef || defaultSubmitButtonRef });
+
+  const preferedErrorSource = 'languageTools';
 
   const editor = useEditor({
     extensions: [
@@ -89,7 +94,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
               metaTags[0].parentNode?.removeChild(metaTags[0]);
             }
             
-            // Remove style attributes from all elements
+            // Remove style attributes from all elements  
             const allElements = tempDiv.getElementsByTagName('*');
             for (let i = 0; i < allElements.length; i++) {
               allElements[i].removeAttribute('style');
@@ -150,6 +155,102 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
         .run();
     }
   }, [value, editor]);
+
+  useEffect(() => {
+    if (resultErrors) {
+      console.log('start checking text');
+      checkText();
+    }
+  }, [resultErrors]);
+
+  const findWordPosition = (word: string, startFrom: number = 0): number => {
+    if (!editor) return -1;
+    const text = editor.getText();
+    return text.indexOf(word, startFrom);
+  };
+
+  const checkOverlap = (start: number, end: number, existingErrors: TextError[]): boolean => {
+    return existingErrors.some(error => 
+      (start >= error.start && start <= error.end) ||
+      (end >= error.start && end <= error.end)
+    );
+  };
+
+  const markErrorInEditor = (error: TextError) => {
+    if (!editor) return;
+
+    try {
+      const from = error.start + 1; // +1 for paragraph node
+      const to = error.end + 1;
+
+      editor
+        .chain()
+        .setTextSelection({ from, to })
+        .setMark(error.type === 'spelling' ? 'spellingError' : 'grammarError', {
+          source: error.source,
+        })
+        .run();
+    } catch (e) {
+      console.error('Error marking text:', e);
+    }
+
+  }
+
+
+  const checkText = async () => {
+    if(!resultErrors) return;
+    console.log('resultErrors', resultErrors);
+
+    editor?.commands.unsetAllMarks();
+    const lastPositionMap = new Map<string, number>();
+    const processedErrors: TextError[] = [];
+    const errors = resultErrors.errors;
+    const originalText = editor?.getText() || '';
+    // Primeiro processa os erros do LanguageTools
+    errors
+    .filter(error => error.source === preferedErrorSource)
+    .forEach(originalError => {
+      const error = { ...originalError };
+      const wordAtPosition = originalText.slice(error.start, error.end);
+      if (wordAtPosition === error.word) {
+        processedErrors.push(error);
+      } else {
+        const lastPos = lastPositionMap.get(error.word) || 0;
+        const newPosition = findWordPosition(error.word, lastPos);
+        if (newPosition !== -1 && !checkOverlap(newPosition, newPosition + error.word.length, processedErrors)) {
+          error.start = newPosition;
+          error.end = newPosition + error.word.length;
+          lastPositionMap.set(error.word, newPosition + 1);
+          processedErrors.push(error);
+        }
+      }
+    });
+
+    // Depois processa os outros erros, evitando sobreposições
+    errors
+    .filter(error => error.source !== preferedErrorSource)
+    .forEach(originalError => {
+      const error = { ...originalError };
+      const wordAtPosition = originalText.slice(error.start, error.end);
+      if (wordAtPosition === error.word && !checkOverlap(error.start, error.end, processedErrors)) {
+        processedErrors.push(error);
+      } else {
+        const lastPos = lastPositionMap.get(error.word) || 0;
+        const newPosition = findWordPosition(error.word, lastPos);
+        if (newPosition !== -1 && !checkOverlap(newPosition, newPosition + error.word.length, processedErrors)) {
+          error.start = newPosition;
+          error.end = newPosition + error.word.length;
+          lastPositionMap.set(error.word, newPosition + 1);
+          processedErrors.push(error);
+        }
+      }
+    });
+
+    errors.forEach(error => {
+      markErrorInEditor(error);
+    });
+    
+  }
 
   const handlePaste = async () => {
     try {

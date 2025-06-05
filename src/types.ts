@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 
-export type Answer = {
-  answer?: string[];
+export type Errors = {
+  errors?: string[];
   showAd?: boolean;
 };
 
@@ -10,13 +10,26 @@ export type ApiError = {
   description?: string;
 };
 
+// export interface Results {
+//   data?: Errors;
+//   error?: ApiError;
+//   request: {
+//     toExclude: string;
+//     toRewrite: string;
+//   };
+// }
+
+export interface TextError {
+  type: string;
+  word: string;
+  start: number;
+  end: number;
+  explanation: string;
+  source: string;
+  suggestions: string[];
+}
 export interface Results {
-  data?: Answer;
-  error?: ApiError;
-  request: {
-    toExclude: string;
-    toRewrite: string;
-  };
+  errors: TextError[];
 }
 
 export type AdType = 'adPlacement' | 'preloader';
@@ -65,7 +78,6 @@ export interface SgRewriteTextsProps {
   endpointUpdAds?: string;
   endpointFeedback?: string;
   sitekey?: string;
-  showWordInput?: boolean;
   redirect?: boolean;
   debug?: boolean;
   redirectPlaceholder?: string;
