@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SG Spell Checker Texts Dev</title>
+    
+    <!-- Required CSS -->
+    <link rel="stylesheet" href="./dist/style.css">
+
+    <!-- Production Dependencies -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/i18next@23.7.16/dist/umd/i18next.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-i18next@14.0.0/dist/umd/react-i18next.min.js"></script>
+
+    <!-- Our component -->
+    <script src="./dist/index.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script>
+        // Wait for everything to load
+        window.addEventListener('load', function() {
+            try {
+                const root = ReactDOM.createRoot(document.getElementById('root'));
+                
+                // Get the component from the UMD bundle
+                const Component = SgSpellChecker.default;
+                
+                // Create element directly
+                root.render(React.createElement(Component, {
+                    endpoint: 'https://your-api-endpoint.com/spell-checker',
+                    projectId: 'your-project-id',
+                    tag: 'spell-checker',
+                    showWordInput: true,
+                    authContext: {
+                        isAuthenticated: true,
+                        isPro: false,
+                        isAdRequired: false
+                    }
+                }));
+
+            } catch (error) {
+                console.error('Detailed error:', error);
+                document.getElementById('root').innerHTML = `
+                    <div style="color: red; padding: 20px;">
+                        <h2>Error occurred:</h2>
+                        <pre>${error.message}\n\n${error.stack}</pre>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html> 
