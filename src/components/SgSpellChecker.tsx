@@ -1,10 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AuthContext, ButtonOption } from '../types';
-// import { AdPlacement } from './AdPlacement';
-import { Drawer } from './Drawer';
-import { OptionSelector } from './OptionSelector';
-import { ResultsSection } from './ResultsSection';
+import { AuthContext } from '../types';
 import { TiptapEditor } from './TiptapEditor';
 import { useResponsive } from '../hooks/useResponsive';
 import { getButtonStyles } from '../helpers/buttonStyles';
@@ -39,46 +35,16 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
   const [results, setResults] = useState<Results | null>(null);
   const [_error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [drawerType, setDrawerType] = useState<
-    'writtingStyle' | 'criativityLevel' | 'tools' | null
-  >(null);
-  const [drawerTitle, setDrawerTitle] = useState('');
   const [logId, setLogId] = useState<string | null>(null);
   const { usageCount, maxUsage, incrementUsage, isLimitReached } = useUsage(tag);
   const { isPro } = useAuthContext();
-
-  const [selectedCreativity, setSelectedCreativity] = useState<ButtonOption>({
-    value: '2',
-    label: t('creativity.medium'),
-    pro: false,
-  });
-  const [selectedStyle, setSelectedStyle] = useState<ButtonOption>({
-    value: 'normal',
-    label: t('style.normal'),
-    pro: false,
-  });
-  const [editorValue, setEditorValue] = useState('');
+  const [editorValue, setEditorValue] = useState('Seja para corrigir e-meils profissionais, trabalhos acadêmicos, mensagens importantes ou qalquer outro tipo de texto, nossa ferramenta é a escolha ideal. Com tecnologia avançada de IA, identificamos erros ortográficos, gramaticais e oferecemos sugestões precisas de coreção.');
   const { isMobile } = useResponsive();
   const buttonStyles = getButtonStyles();
   const submitButtonRef = useRef<HTMLButtonElement>(null);
   const [isSecondToLastAttempt, setIsSecondToLastAttempt] = useState(false);
 
   const MAX_CHARS = 1000; // Define max chars constant
-
-  const [lastSelectedOption, setLastSelectedOption] = useState<{
-    style?: {
-      value: string;
-      type: string;
-      pro: boolean;
-    };
-    creativity?: {
-      value: string;
-      type: string;
-      pro: boolean;
-    };
-    activeType?: string;
-  }>({});
 
   const [warningUsageVisible, setWarningUsageVisible] = useState(false);
 
@@ -118,10 +84,6 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
         },
         body: JSON.stringify({
           text: editorValue,
-          writtingStyle: selectedStyle.value,
-          creativity: selectedCreativity.value,
-          projectId,
-          tag,
         }),
       });
 
@@ -192,176 +154,12 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
     }
   };
 
-  const handleOptionSelect = (option: ButtonOption, type: 'style' | 'creativity') => {
-    if (type === 'style') {
-      setSelectedStyle(option);
-    } else if (type === 'creativity') {
-      setSelectedCreativity(option);
-    }
-    setDrawerOpen(false);
-
-    if (option.pro && !isPro) {
-      setLastSelectedOption((prev) => ({
-        ...prev,
-        [type]: {
-          value: option.value,
-          type: type === 'style' ? 'writtingStyle' : 'criativityLevel',
-          pro: true,
-        },
-        activeType: type === 'style' ? 'writtingStyle' : 'criativityLevel',
-      }));
-    } else {
-      setLastSelectedOption((prev) => {
-        const newState = { ...prev };
-        delete newState[type];
-        if (type === 'style' && newState.creativity) {
-          newState.activeType = 'criativityLevel';
-        } else if (type === 'creativity' && newState.style) {
-          newState.activeType = 'writtingStyle';
-        }
-        return newState;
-      });
-    }
-  };
-
   const isDisabled = isSubmitDisabled({
     loading,
-    selectedStyle,
-    selectedCreativity,
     editorValue: showWordInput ? editorValue : undefined,
     isPro,
     maxChars: MAX_CHARS,
   });
-
-  const handleDrawerOpen = (options: {
-    type: string;
-    title: string;
-    options: ButtonOption[];
-    selectedValue: string;
-    isLinkDrawer?: boolean;
-  }) => {
-    // Map the heading to the correct drawer type
-    const drawerTypeMap: Record<string, 'writtingStyle' | 'criativityLevel' | 'tools'> = {
-      [t('style.label').toLowerCase()]: 'writtingStyle',
-      [t('creativity.label').toLowerCase()]: 'criativityLevel',
-      tools: 'tools',
-    };
-
-    const type =
-      drawerTypeMap[options.type] ||
-      (options.type as 'writtingStyle' | 'criativityLevel' | 'tools');
-    setDrawerType(type);
-    setDrawerTitle(options.title);
-    setDrawerOpen(true);
-  };
-
-  // Memoize the options to prevent unnecessary re-renders
-  const styleOptions = React.useMemo(
-    () => [
-      {
-        value: t('style.normal.value'),
-        label: t('style.normal.label'),
-        description: t('style.normal.description'),
-        pro: false,
-      },
-      {
-        value: t('style.formal.value'),
-        label: t('style.formal.label'),
-        description: t('style.formal.description'),
-        pro: true,
-      },
-      {
-        value: t('style.academic.value'),
-        label: t('style.academic.label'),
-        description: t('style.academic.description'),
-        pro: true,
-      },
-      {
-        value: t('style.direct.value'),
-        label: t('style.direct.label'),
-        description: t('style.direct.description'),
-        pro: true,
-      },
-      {
-        value: t('style.humanize.value'),
-        label: t('style.humanize.label'),
-        description: t('style.humanize.description'),
-        pro: true,
-      },
-    ],
-    [t]
-  );
-
-  const creativityOptions = React.useMemo(
-    () => [
-      {
-        value: t('creativity.low.value'),
-        label: t('creativity.low.label'),
-        description: t('creativity.low.description'),
-        pro: false,
-      },
-      {
-        value: t('creativity.medium.value'),
-        label: t('creativity.medium.label'),
-        description: t('creativity.medium.description'),
-        pro: false,
-      },
-      {
-        value: t('creativity.high.value'),
-        label: t('creativity.high.label'),
-        description: t('creativity.high.description'),
-        pro: false,
-      },
-    ],
-    [t]
-  );
-
-  const getDrawerOptions = React.useCallback(() => {
-    switch (drawerType) {
-      case 'writtingStyle':
-        return styleOptions;
-      case 'criativityLevel':
-        return creativityOptions;
-      default:
-        return [];
-    }
-  }, [drawerType, styleOptions, creativityOptions]);
-
-  const getDrawerSelectedValue = () => {
-    switch (drawerType) {
-      case 'writtingStyle':
-        return selectedStyle?.value;
-      case 'criativityLevel':
-        return selectedCreativity?.value;
-      default:
-        return '/reescrever-texto/';
-    }
-  };
-
-  const handleDrawerSelect = (option: ButtonOption) => {
-    if (drawerType === 'tools') {
-      window.location.href = option.value;
-    } else {
-      handleOptionSelect(option, drawerType === 'writtingStyle' ? 'style' : 'creativity');
-    }
-  };
-
-  const handleProModeClose = () => {
-    // Reset to default options
-    setSelectedStyle({
-      value: t('style.normal.value'),
-      label: t('style.normal.label'),
-      description: t('style.normal.description'),
-      pro: false,
-    });
-    setSelectedCreativity({
-      value: t('creativity.medium.value'),
-      label: t('creativity.medium.label'),
-      description: t('creativity.medium.description'),
-      pro: false,
-    });
-    setLastSelectedOption({});
-  };
 
   const handleClear = () => {
     setResults(null);
@@ -390,11 +188,7 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
               isDisabled={isDisabled}
               submitButtonRef={submitButtonRef}
               warningUsageVisible={warningUsageVisible}
-              showProModeTooltip={
-                !isPro && (!!lastSelectedOption.style?.pro || !!lastSelectedOption.creativity?.pro)
-              }
               onClear={handleClear}
-              preventFocus={drawerOpen}
             />
           </div>
 
@@ -440,17 +234,6 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
           )}
         </div>
       )}
-
-      {/* {authContext.isAdRequired && <AdPlacement type="adPlacement" />} */}
-
-      <Drawer
-        isOpen={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        title={drawerTitle}
-        options={getDrawerOptions()}
-        selectedValue={getDrawerSelectedValue()}
-        onSelect={handleDrawerSelect}
-      />
 
       {warningUsageVisible && (
         <div className="fixed inset-0 z-[9999]" id="conversion-popup-container">

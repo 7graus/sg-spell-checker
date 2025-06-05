@@ -6,6 +6,8 @@ import { Clipboard, X, CircleAlert, ArrowRight } from 'lucide-react';
 import { getButtonStyles } from '../helpers/buttonStyles';
 import { useTranslation } from 'react-i18next';
 import { useEditorHeight } from '../hooks/useEditorHeight';
+import { SpellingErrorMark } from './editor-marks/SpellingErrorMark';
+import { GrammarErrorMark } from './editor-marks/GrammarErrorMark';
 
 interface TiptapEditorProps {
   value: string;
@@ -24,9 +26,7 @@ interface TiptapEditorProps {
   langCode?: string;
   submitButtonRef?: React.RefObject<HTMLButtonElement>;
   warningUsageVisible?: boolean;
-  showProModeTooltip?: boolean;
   onClear?: () => void;
-  preventFocus?: boolean;
 }
 
 export const TiptapEditor: React.FC<TiptapEditorProps> = ({
@@ -43,9 +43,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
   onSubmit,
   isDisabled = false,
   submitButtonRef,
-  showProModeTooltip = false,
   onClear,
-  preventFocus = false
 }) => {
   const [warningCharsVisible, setWarningCharsVisible] = useState(true);
   const [warningUsageVisible, setWarningUsageVisible] = useState(true);
@@ -56,12 +54,14 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
   const editor = useEditor({
     extensions: [
       StarterKit,
+      SpellingErrorMark,
+      GrammarErrorMark,
       Placeholder.configure({
         placeholder,
       }),
     ],
     content: value,
-    editable: !disabled && !preventFocus,
+    editable: !disabled,
     onUpdate: ({ editor }) => {
       const text = editor.getText();
       onChange(text);
@@ -126,9 +126,14 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
         return true;
       },
       attributes: {
-        class: preventFocus ? 'pointer-events-none' : '',
-        tabindex: preventFocus ? '-1' : '0',
-        'data-ios-focus-prevent': preventFocus ? 'true' : 'false'
+        class: '',
+        tabindex: '0',
+        spellcheck: 'false',
+        autocorrect: 'off',
+        autocapitalize: 'off',
+        'data-gramm': 'false',
+        'data-gramm_editor': 'false',
+        'data-enable-grammarly': 'false',
       }
     }
   });
@@ -145,31 +150,6 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
         .run();
     }
   }, [value, editor]);
-
-  // Add iOS-specific focus prevention
-  useEffect(() => {
-    if (preventFocus && editorRef.current) {
-      const editorElement = editorRef.current;
-      editorElement.setAttribute('tabindex', '-1');
-      editorElement.setAttribute('data-ios-focus-prevent', 'true');
-      
-      // Prevent focus on iOS
-      const preventFocusHandler = (e: FocusEvent) => {
-        if (preventFocus) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      };
-      
-      editorElement.addEventListener('focusin', preventFocusHandler, true);
-      editorElement.addEventListener('focus', preventFocusHandler, true);
-      
-      return () => {
-        editorElement.removeEventListener('focusin', preventFocusHandler, true);
-        editorElement.removeEventListener('focus', preventFocusHandler, true);
-      };
-    }
-  }, [preventFocus]);
 
   const handlePaste = async () => {
     try {
@@ -270,7 +250,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
             className="absolute w-[36px] h-[36px] z-[1] top-2 right-2 cursor-pointer bg-gray-bg flex items-center justify-center rounded-md"
             onClick={handleClear}
             aria-label={t('general.clear')}
-            tabIndex={preventFocus ? -1 : 0}
+            tabIndex={0}
           >
             <X size={17} className="text-gray-text-secondary" />
           </button>
@@ -280,12 +260,12 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
           ref={editorRef}
           className={`tiptap-editor overflow-hidden w-full h-full min-h-[30vh] md:min-h-[50vh] md:max-h-[100vh] flex bg-white rounded-md pl-3 py-2 focus:outline-none prose prose-sm max-w-none relative ${
             disabled ? 'opacity-50 cursor-not-allowed' : ''
-          } ${preventFocus ? 'pointer-events-none' : ''}`}
+          }`}
           style={{
             maxHeight: isMobile ? undefined : '80vh',
             height: editorHeight ? `${editorHeight}px` : undefined,
           }}
-          tabIndex={preventFocus ? -1 : 0}
+          tabIndex={0}
         >
           <div className="flex-grow w-full">
             <EditorContent editor={editor} className="w-full h-full" />
@@ -334,49 +314,18 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
               <button
                 type="button"
                 className={`relative ${buttonStyles.cta.base} ${
-                  isDisabled || showProModeTooltip
+                  isDisabled
                     ? buttonStyles.cta.disabled
                     : buttonStyles.cta.enabled
                 }`}
                 onClick={onSubmit}
-                disabled={isDisabled || showProModeTooltip}
+                disabled={isDisabled}
               >
                 <div className={`${buttonStyles.cta.text}`}>
                   {loading ? t('loading') : t('submit')}
                 </div>
                 <ArrowRight className={`${buttonStyles.cta.text} w-5 h-5 ml-2`} />
               </button>
-              {showProModeTooltip && (
-                <>
-                  <div
-                    className="min-w-[150px] z-10 absolute top-[calc(100%+10px)] right-1/2 translate-x-1/2 text-xs text-white bg-gray-bg-dark rounded-lg px-2 pt-1.5 pb-2 font-normal"
-                    onClick={(e) => {
-                      const target = e.target as HTMLElement;
-                      if (target.dataset.trackClick) {
-                        window.dispatchEvent(
-                          new CustomEvent(`sg-tool-click`, {
-                            detail: {
-                              value: `cta_pro_click_reescrever_popup_feat_pro`,
-                            },
-                            composed: true,
-                            bubbles: true,
-                          })
-                        );
-                      }
-                    }}
-                    dangerouslySetInnerHTML={{
-                      __html: t('general.buttonTooltip', {
-                        utmSource: 'sinonimos',
-                        utmMedium: 'spell-checker_tooltip',
-                        utmCampaign: 'spell-checker_tooltip',
-                        linkCssClass: t('underline font-bold antialiased hover:no-underline'),
-                      }),
-                    }}
-                  />
-
-                  <span className="absolute w-2 h-2 top-[calc(100%+6px)] right-1/2 translate-x-1/2 bg-gray-bg-dark rotate-45"></span>
-                </>
-              )}
             </div>
           )}
         </div>
