@@ -27,4 +27,26 @@
 .tiptap-editor.disabled .ProseMirror {
   @apply cursor-not-allowed;
 }  */
+/* 
+.tiptap-editor .spelling-error {
+  background-color: #ffeaea;
+  border-bottom: 2px dotted #e74c3c;
+  cursor: pointer;
+}
 
+.tiptap-editor .grammar-error {
+  background-color: #eaf7ff;
+  border-bottom: 2px dashed #3498db;
+  cursor: pointer;
+}
+
+.tiptap-editor .spelling-error:active,
+.tiptap-editor .grammar-error:active {
+  opacity: 0.8;
+}
+ */
+
+.tiptap-editor .error-active {
+  background-color: #f8f9fa;
+  box-shadow: 0 0 0 2px #3498db;
+}

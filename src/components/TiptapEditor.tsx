@@ -9,6 +9,7 @@ import { useEditorHeight } from '../hooks/useEditorHeight';
 import { SpellingErrorMark } from './editor-marks/SpellingErrorMark';
 import { GrammarErrorMark } from './editor-marks/GrammarErrorMark';
 import { Results, TextError } from '../types';
+import { ErrorHoverCard } from './ErrorHoverCard';
 
 interface TiptapEditorProps {
   value: string;
@@ -145,6 +146,14 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
   const { t } = useTranslation();
   const buttonStyles = getButtonStyles();
 
+  const [hoveredError, setHoveredError] = useState<{
+    suggestions: string[];
+    type: 'spelling' | 'grammar';
+    range: { from: number; to: number };
+    element: HTMLElement | null;
+  } | null>(null);
+  const activeErrorRef = useRef<HTMLElement | null>(null);
+
   useEffect(() => {
     if (editor && editor.getText() !== value) {
       editor
@@ -176,6 +185,72 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
     );
   };
 
+  const handleErrorClick = (event: React.MouseEvent<HTMLSpanElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const element = event.target as HTMLElement;
+    
+    // Remove active class from previous element if exists
+    if (activeErrorRef.current) {
+      activeErrorRef.current.classList.remove('error-active');
+    }
+    
+    element.classList.add('error-active');
+    activeErrorRef.current = element;
+
+    const suggestions = JSON.parse(element.getAttribute('data-suggestions') || '[]');
+    const type = element.classList.contains('spelling-error') ? 'spelling' : 'grammar';
+    
+    if (editor) {
+      const pos = editor.view.posAtDOM(element, 0);
+      const textContent = element.textContent || '';
+      const end = pos + textContent.length;
+      setHoveredError({
+        suggestions,
+        type,
+        range: { from: pos, to: end },
+        element
+      });
+    }
+  };
+
+  const handleCloseCard = () => {
+    setHoveredError(null);
+    if (activeErrorRef.current) {
+      activeErrorRef.current.classList.remove('error-active');
+      activeErrorRef.current = null;
+    }
+  };
+
+  // Add click handler to close the card when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (hoveredError && !target.closest('.error-card')) {
+        handleCloseCard();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [hoveredError]);
+
+  const handleSuggestionClick = (suggestion: string) => {
+    if (editor && hoveredError) {
+      editor
+        .chain()
+        .focus()
+        .setTextSelection(hoveredError.range)
+        .deleteSelection()
+        .insertContent(suggestion)
+        .run();
+      handleCloseCard();
+    }
+  };
+
   const markErrorInEditor = (error: TextError) => {
     if (!editor) return;
 
@@ -188,14 +263,13 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
         .setTextSelection({ from, to })
         .setMark(error.type === 'spelling' ? 'spellingError' : 'grammarError', {
           source: error.source,
+          suggestions: error.suggestions || [],
         })
         .run();
     } catch (e) {
       console.error('Error marking text:', e);
     }
-
-  }
-
+  };
 
   const checkText = async () => {
     if(!resultErrors) return;
@@ -369,7 +443,24 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
           tabIndex={0}
         >
           <div className="flex-grow w-full">
-            <EditorContent editor={editor} className="w-full h-full" />
+            <EditorContent 
+              editor={editor} 
+              className="w-full h-full"
+              onClick={(e) => {
+                const target = e.target as HTMLElement;
+                if (target.classList.contains('spelling-error') || target.classList.contains('grammar-error')) {
+                  handleErrorClick(e as any);
+                }
+              }}
+            />
+            {hoveredError && (
+              <ErrorHoverCard
+                suggestions={hoveredError.suggestions}
+                onSuggestionClick={handleSuggestionClick}
+                onClose={handleCloseCard}
+                targetElement={hoveredError.element}
+              />
+            )}
             {!value && (
               <button
                 onClick={handlePaste}

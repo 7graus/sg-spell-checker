@@ -1755,6 +1755,16 @@ video {
   cursor: not-allowed;
 }
 
+.tiptap-editor .spelling-error {
+  background-color: rgba(217, 48, 37, 0.2);
+  border-bottom: 3px solid #D93025;
+}
+
+.tiptap-editor .grammar-error {
+  background-color: #EEE1FF;
+  border-bottom: 3px solid #9747FF;
+}
+
 .before\:absolute::before {
   content: var(--tw-content);
   position: absolute;
@@ -2219,4 +2229,4 @@ video {
     --tw-shadow-colored: 0 0 #0000;
     box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
   }
-} 
+}

@@ -57,11 +57,18 @@
 } 
 
 .tiptap-editor .spelling-error {
-  background-color: rgba(217, 48, 37, 0.2);;
   border-bottom: 3px solid #D93025;
 }
 
 .tiptap-editor .grammar-error {
-  background-color: #EEE1FF;
   border-bottom: 3px solid #9747FF;
 }
+
+.tiptap-editor .grammar-error.error-active {
+  background-color: #EEE1FF;
+}
+
+.tiptap-editor .spelling-error.error-active {
+  background-color: rgba(217, 48, 37, 0.2);
+}
+

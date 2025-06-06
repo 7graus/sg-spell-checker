@@ -10,6 +10,18 @@ export const GrammarErrorMark = Mark.create({
       source: {
         default: null,
       },
+      suggestions: {
+        default: [],
+        parseHTML: element => {
+          const suggestions = element.getAttribute('data-suggestions');
+          return suggestions ? JSON.parse(suggestions) : [];
+        },
+        renderHTML: attributes => {
+          return {
+            'data-suggestions': JSON.stringify(attributes.suggestions),
+          };
+        },
+      },
     };
   },
   parseHTML() {
