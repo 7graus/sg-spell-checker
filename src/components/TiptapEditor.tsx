@@ -191,33 +191,38 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
   const handleErrorClick = (event: React.MouseEvent<HTMLSpanElement>) => {
     event.preventDefault();
     event.stopPropagation();
-    
+  
     const element = event.target as HTMLElement;
-    
+  
     // Remove active class from previous element if exists
     if (activeErrorRef.current) {
       activeErrorRef.current.classList.remove('error-active');
     }
-    
-    element.classList.add('error-active');
-    activeErrorRef.current = element;
-
-    const suggestions = JSON.parse(element.getAttribute('data-suggestions') || '[]');
-    const type = element.classList.contains('spelling-error') ? 'spelling' : 'grammar';
-    
-    if (editor) {
-      const pos = editor.view.posAtDOM(element, 0);
-      const textContent = element.textContent || '';
-      const end = pos + textContent.length;
-      setHoveredError({
-        suggestions,
-        type,
-        range: { from: pos, to: end },
-        element
-      });
-    }
+  
+    // First: Clear hoveredError so ErrorHoverCard unmounts
+    setHoveredError(null);
+  
+    // Delay opening new one by 1 frame (to allow unmount first)
+    requestAnimationFrame(() => {
+      element.classList.add('error-active');
+      activeErrorRef.current = element;
+  
+      const suggestions = JSON.parse(element.getAttribute('data-suggestions') || '[]');
+      const type = element.classList.contains('spelling-error') ? 'spelling' : 'grammar';
+  
+      if (editor) {
+        const pos = editor.view.posAtDOM(element, 0);
+        const textContent = element.textContent || '';
+        const end = pos + textContent.length;
+        setHoveredError({
+          suggestions,
+          type,
+          range: { from: pos, to: end },
+          element
+        });
+      }
+    });
   };
-
   const handleCloseCard = () => {
     setHoveredError(null);
     if (activeErrorRef.current) {
@@ -482,10 +487,12 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
             />
             {hoveredError && (
               <ErrorHoverCard
+                key={`${hoveredError.range.from}-${hoveredError.range.to}`}
                 suggestions={hoveredError.suggestions}
                 onSuggestionClick={handleSuggestionClick}
                 onClose={handleCloseCard}
                 targetElement={hoveredError.element}
+                type={hoveredError.type}
               />
             )}
             {!value && (

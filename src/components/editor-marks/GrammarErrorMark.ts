@@ -5,7 +5,7 @@ export const GrammarErrorMark = Mark.create({
   addAttributes() {
     return {
       class: {
-        default: 'grammar-error 222',
+        default: 'grammar-error',
       },
       source: {
         default: null,

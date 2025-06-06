@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 
 interface ErrorHoverCardProps {
   suggestions: string[];
+  type: 'spelling' | 'grammar';
   onSuggestionClick: (suggestion: string) => void;
   onClose: () => void;
   targetElement: HTMLElement | null;
@@ -11,6 +12,7 @@ interface ErrorHoverCardProps {
 
 export const ErrorHoverCard: React.FC<ErrorHoverCardProps> = ({
   suggestions,
+  type,
   onSuggestionClick,
   onClose,
   targetElement,
@@ -22,8 +24,11 @@ export const ErrorHoverCard: React.FC<ErrorHoverCardProps> = ({
   useEffect(() => {
     const updatePosition = () => {
       if (!targetElement || !cardRef.current) return;
-
       const rect = targetElement.getBoundingClientRect();
+      console.log(document.querySelector(targetElement.className));
+      console.log('--------------------------------');
+      console.log('targetElement', targetElement);
+      console.log('rect', rect);
       const cardHeight = cardRef.current.offsetHeight;
       const cardWidth = cardRef.current.offsetWidth;
       const windowHeight = window.innerHeight;
@@ -70,13 +75,18 @@ export const ErrorHoverCard: React.FC<ErrorHoverCardProps> = ({
       }}
       onClick={handleCardClick}
     >
-      <div className="flex justify-between items-center mb-2">
-        <div className="text-sm font-medium text-gray-700">
-          {t('editor.suggestions')}
+      <div className="flex justify-start items-center mb-2">
+        {type === 'spelling' ? (
+          <div className="w-4 h-4 rounded-full bg-errorType-spelling-border mr-2" />
+        ) : (
+          <div className="w-4 h-4 rounded-full bg-errorType-grammar-border mr-2" />
+        )}
+        <div className="text-sm font-bold text-gray-700">
+          {t(`editor.card.title.${type}`)}
         </div>
         <button
           onClick={onClose}
-          className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+          className="p-1 hover:bg-gray-100 rounded-full transition-colors absolute top-2 right-2"
         >
           <X size={16} className="text-gray-500" />
         </button>

@@ -36,9 +36,11 @@ const resources = {
           label: 'Texto para verificar',
           placeholder: 'Digite ou cole o texto que você deseja verificar...',
         },
-        exclude: {
-          label: 'Palavras para excluir',
-          placeholder: 'Digite as palavras que você deseja excluir...',
+        card: {
+          title: {
+            spelling: 'Erro Ortográfico',
+            grammar: 'Erro Gramatical',
+          },
         },
       },
       style: {

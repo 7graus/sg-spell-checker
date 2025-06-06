@@ -5,6 +5,18 @@ export default {
     extend: {
       colors: {
         brand: '#ff6600', // Custom color
+        errorType: {
+          spelling: {
+            bg: 'rgba(217, 48, 37, 0.2)',
+            border: '#D93025',
+            text: '#DE350B',
+          },
+          grammar: {
+            bg: '#EEE1FF',
+            border: '#9747FF',
+            text: '#6610F2',
+          },
+        },
         blue: {
           DEFAULT: '#1A73E8',
           light: '#E5F2FF',
