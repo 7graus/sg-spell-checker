@@ -13,9 +13,12 @@ export const getButtonStyles = () => ({
     },
   },
   cta: {
-    base: 'bg-blue border-2 px-6 pt-2 pb-2.5 rounded-full flex font-bold antialiased text-lg transition-all duration-200 leading-none group w-max group font-barlow',
+    blue: 'bg-blue',
+    green: 'bg-[#008F7C] border-[#007A6A]',
+    base: 'border-2 px-6 pt-2 pb-2.5 rounded-full flex font-bold antialiased text-lg transition-all duration-200 leading-none group w-max group font-barlow',
     text: 'flex items-center justify-center gap-2 group-[&:not(:disabled)]:drop-shadow-cta',
     enabled: 'border-blue-dark text-white hover:bg-blue-dark',
+    enabledGreen: 'border-[#007A6A] text-white hover:bg-[#007A6A]',
     disabled:
       'disabled:cursor-not-allowed disabled:border-gray-bg-medium disabled:bg-gray-bg-medium disabled:text-gray-text-disabled',
     loading: 'bg-blue border border-blue-dark text-white',

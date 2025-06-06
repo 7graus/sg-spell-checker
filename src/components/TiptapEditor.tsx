@@ -185,9 +185,14 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
   };
 
   const checkOverlap = (start: number, end: number, existingErrors: TextError[]): boolean => {
+    console.log('existingErrors', existingErrors);
+
     return existingErrors.some(
-      (error) =>
-        (start >= error.start && start <= error.end) || (end >= error.start && end <= error.end)
+      (error) =>{
+        console.log('error', error);
+        const endError = error.start + error.word.length;
+        return (start >= error.start && start <= endError) || (end >= error.start && end <= endError)
+      }
     );
   };
 
@@ -385,7 +390,7 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
 
     try {
       const from = error.start + 1; // +1 for paragraph node
-      const to = error.end + 1;
+      const to = error.start + error.word.length + 1;
 
       editor
         .chain()
@@ -653,8 +658,8 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
               {resultErrors && (
                 <button
                   type="button"
-                  className={`relative ${buttonStyles.cta.base} ${
-                    isDisabled ? buttonStyles.cta.disabled : buttonStyles.cta.enabled
+                  className={`relative ${buttonStyles.cta.base} ${buttonStyles.cta.green} ${
+                    isDisabled ? buttonStyles.cta.disabled : buttonStyles.cta.enabledGreen
                   }`}
                   onClick={handleAcceptAll}
                   disabled={isDisabled}
@@ -668,7 +673,7 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
               {!resultErrors && (
                 <button
                   type="button"
-                  className={`relative ${buttonStyles.cta.base} ${
+                  className={`relative ${buttonStyles.cta.base} ${buttonStyles.cta.blue} ${
                     isDisabled ? buttonStyles.cta.disabled : buttonStyles.cta.enabled
                   }`}
                   onClick={onSubmit}

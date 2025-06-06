@@ -177,8 +177,8 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
             {results && (
               <button
                 type="button"
-                className={`relative ${buttonStyles.cta.base} ${
-                  isDisabled ? buttonStyles.cta.disabled : buttonStyles.cta.enabled
+                className={`relative ${buttonStyles.cta.base} ${buttonStyles.cta.green} ${
+                  isDisabled ? buttonStyles.cta.disabled : buttonStyles.cta.enabledGreen
                 }`}
                 onClick={handleAcceptAll}
                 disabled={isDisabled}
@@ -190,7 +190,7 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
               <button
                 ref={submitButtonRef}
                 type="button"
-                className={`${buttonStyles.cta.base} ${
+                className={`${buttonStyles.cta.base} ${buttonStyles.cta.blue} ${
                   isDisabled ? buttonStyles.cta.disabled : buttonStyles.cta.enabled
                 }`}
                 onClick={handleSubmit}
