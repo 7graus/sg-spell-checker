@@ -22,6 +22,15 @@ export const GrammarErrorMark = Mark.create({
           };
         },
       },
+      explanation: {
+        default: '',
+        parseHTML: element => element.getAttribute('data-explanation'),
+        renderHTML: attributes => {
+          return {
+            'data-explanation': attributes.explanation,
+          };
+        },
+      },
       errorCorrected: {
         default: false,
         parseHTML: element => element.classList.contains('error-corrected'),
@@ -48,6 +57,7 @@ export const GrammarErrorMark = Mark.create({
       'span',
       {
         'data-suggestions': HTMLAttributes['data-suggestions'],
+        'data-explanation': HTMLAttributes['data-explanation'],
         class: classes.join(' '),
       },
       0,

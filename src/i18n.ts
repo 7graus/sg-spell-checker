@@ -36,6 +36,7 @@ const resources = {
           label: 'Texto para verificar',
           placeholder: 'Digite ou cole o texto que você deseja verificar...',
         },
+        acceptAll: 'Aceitar todas as correções',
         card: {
           title: {
             spelling: 'Erro Ortográfico',

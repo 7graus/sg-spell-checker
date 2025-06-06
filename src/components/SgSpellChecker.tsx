@@ -183,7 +183,7 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
                 onClick={handleAcceptAll}
                 disabled={isDisabled}
               >
-                <div className={`${buttonStyles.cta.text}`}>{t('editor.acceptAllCorrections')}</div>
+                <div className={`${buttonStyles.cta.text}`}>{t('editor.acceptAll')}</div>
               </button>
             )}
             {!results && (

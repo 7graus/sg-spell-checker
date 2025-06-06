@@ -159,6 +159,7 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
 
   const [hoveredError, setHoveredError] = useState<{
     suggestions: string[];
+    explanation: string;
     type: 'spelling' | 'grammar';
     range: { from: number; to: number };
     element: HTMLElement | null;
@@ -210,6 +211,7 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
       activeErrorRef.current = element;
 
       const suggestions = JSON.parse(element.getAttribute('data-suggestions') || '[]');
+      const explanation = element.getAttribute('data-explanation') || '';
       const type = element.classList.contains('spelling-error') ? 'spelling' : 'grammar';
 
       if (editor) {
@@ -218,6 +220,7 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
         const end = pos + textContent.length;
         setHoveredError({
           suggestions,
+          explanation,
           type,
           range: { from: pos, to: end },
           element,
@@ -286,7 +289,7 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
         .focus()
         .setTextSelection({ from, to })
         .unsetMark(errorType)
-        .setMark(errorType, { errorCorrected: true, source: preferedErrorSource, suggestions: hoveredError.suggestions })
+        .setMark(errorType, { errorCorrected: true, source: preferedErrorSource, suggestions: hoveredError.suggestions, explanation: hoveredError.explanation })
         .insertContentAt(afterErrorPos, [
           {
             type: 'text',
@@ -390,6 +393,7 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
         .setMark(error.type === 'spelling' ? 'spellingError' : 'grammarError', {
           source: error.source,
           suggestions: error.suggestions || [],
+          explanation: error.explanation || '',
           errorCorrected: false,
         })
         .run();
@@ -595,6 +599,7 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
               <ErrorHoverCard
                 key={`${hoveredError.range.from}-${hoveredError.range.to}`}
                 suggestions={hoveredError.suggestions}
+                explanation={hoveredError.explanation}
                 onSuggestionClick={handleSuggestionClick}
                 onIgnoreClick={handleIgnoreClick}
                 onClose={handleCloseCard}
@@ -655,7 +660,7 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
                   disabled={isDisabled}
                 >
                   <div className={`${buttonStyles.cta.text}`}>
-                    {t('editor.acceptAllCorrections')}
+                    {t('editor.acceptAll')}
                   </div>
                   <ArrowRight className={`${buttonStyles.cta.text} w-5 h-5 ml-2`} />
                 </button>

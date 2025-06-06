@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 
 interface ErrorHoverCardProps {
   suggestions: string[];
+  explanation: string;
   type: 'spelling' | 'grammar';
   onSuggestionClick: (suggestion: string) => void;
   onIgnoreClick: () => void;
@@ -13,6 +14,7 @@ interface ErrorHoverCardProps {
 
 export const ErrorHoverCard: React.FC<ErrorHoverCardProps> = ({
   suggestions,
+  explanation,
   type,
   onSuggestionClick,
   onIgnoreClick,
@@ -67,7 +69,7 @@ export const ErrorHoverCard: React.FC<ErrorHoverCardProps> = ({
   return (
     <div
       ref={cardRef}
-      className="error-card fixed z-[9999] bg-white rounded-lg shadow-lg border border-gray-200 p-3 min-w-[200px] animate-fade-down-subtle max-w-[300px]"
+      className="error-card fixed z-[9999] bg-white rounded-lg shadow-lg border border-gray-300 p-3 min-w-[200px] animate-fade-down-subtle max-w-[300px]"
       style={{
         top: `${position.top}px`,
         left: `${position.left}px`,
@@ -76,11 +78,11 @@ export const ErrorHoverCard: React.FC<ErrorHoverCardProps> = ({
     >
       <div className="flex justify-start items-center mb-2">
         {type === 'spelling' ? (
-          <div className="w-4 h-4 rounded-full bg-errorType-spelling-border mr-2" />
+          <div className="w-[10px] h-[10px] rounded-full bg-errorType-spelling-border mr-2" />
         ) : (
-          <div className="w-4 h-4 rounded-full bg-errorType-grammar-border mr-2" />
+          <div className="w-[10px] h-[10px] rounded-full bg-errorType-grammar-border mr-2" />
         )}
-        <div className="text-sm font-bold text-gray-700">
+        <div className="text-xs font-bold text-gray-700">
           {t(`editor.card.title.${type}`)}
         </div>
         <button
@@ -90,18 +92,21 @@ export const ErrorHoverCard: React.FC<ErrorHoverCardProps> = ({
           <X size={16} className="text-gray-500" />
         </button>
       </div>
+      <div className="text-sm mb-4">
+        {explanation}
+      </div>
       <div className="flex flex-row flex-wrap gap-2">
         {suggestions.map((suggestion, index) => (
           <button
             key={index}
-            className="text-left px-2 py-1 text-sm text-blue-600 border border-blue-600 rounded-full hover:bg-blue-50"
+            className="text-left px-2 py-1 text-xs text-blue-600 border border-blue-600 rounded-full hover:bg-blue-50"
             onClick={() => onSuggestionClick(suggestion)}
           >
             {suggestion}
           </button>
         ))}
         <button
-            className="text-left px-2 py-1 text-sm text-[#566981] border border-[#566981] rounded-full hover:bg-blue-50"
+            className="text-left px-2 py-1 text-xs text-[#566981] border border-[#B5C0CE] rounded-full hover:bg-blue-50"
             onClick={onIgnoreClick}
           >
             {t('editor.card.ignore')}
