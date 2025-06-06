@@ -23,7 +23,7 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
   endpoint,
   projectId,
   tag,
-  endpointFeedbackProject
+  endpointFeedbackProject,
 }) => {
   const { t } = useTranslation();
   const [results, setResults] = useState<Results | null>(null);
@@ -32,10 +32,13 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
   const [logId, setLogId] = useState<string | null>(null);
   const { usageCount, maxUsage, incrementUsage, isLimitReached } = useUsage(tag);
   const { isPro } = useAuthContext();
-  const [editorValue, setEditorValue] = useState('Seja para corrigir e-meils profissionais, trabalhos acadêmicos, mensagens importantes ou qalquer outro tipo de texto, nossa ferramenta é a escolha ideal. Com tecnologia avançada de IA, identificamos erros ortográficos, gramaticais e oferecemos sugestões precisas de coreção.');
+  const [editorValue, setEditorValue] = useState(
+    'Seja para corrigir e-meils profissionais, trabalhos acadêmicos, mensagens importantes ou qalquer outro tipo de texto, nossa ferramenta é a escolha ideal. Com tecnologia avançada de IA, identificamos erros ortográficos, gramaticais e oferecemos sugestões precisas de coreção.'
+  );
   const { isMobile } = useResponsive();
   const buttonStyles = getButtonStyles();
   const submitButtonRef = useRef<HTMLButtonElement>(null);
+  const editorRef = useRef<{ handleAcceptAll: () => void }>(null);
   const [isSecondToLastAttempt, setIsSecondToLastAttempt] = useState(false);
 
   const MAX_CHARS = 1000; // Define max chars constant
@@ -49,7 +52,7 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
   }, [isPro, isLimitReached, isSecondToLastAttempt]);
 
   const handleSubmit = async () => {
-    if(usageCount === maxUsage - 1) {
+    if (usageCount === maxUsage - 1) {
       setIsSecondToLastAttempt(true);
     } else {
       setIsSecondToLastAttempt(false);
@@ -88,7 +91,7 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
 
       const dataJson = await response.json();
       const data = dataJson.data;
-      
+
       if (data.errors) {
         setResults({ errors: data.errors });
       }
@@ -123,11 +126,16 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
     setLogId(null);
   };
 
+  const handleAcceptAll = () => {
+    editorRef.current?.handleAcceptAll();
+  };
+
   return (
     <div className="block md:border md:border-gray-border-secondary md:rounded-lg md:shadow-lg md:bg-white mx-auto">
       <div className="flex flex-col md:flex-row border shadow-xl md:shadow-none rounded-lg md:rounded-none border-gray-border-secondary md:border-0 bg-white md:bg-transparent">
         <div className="w-full flex flex-col justify-between">
           <TiptapEditor
+            ref={editorRef}
             value={editorValue}
             placeholder={isMobile ? t('general.info1-mobile') : t('general.info1-desktop')}
             onChange={setEditorValue}
@@ -151,13 +159,14 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
           <div
             className={`w-full p-2 flex items-center ${results ? 'justify-between' : 'justify-center'}`}
           >
+            
             {results && logId && (
               <UserFeedback
                 endpoint="https://api.7gra.us/feedback/v1"
                 projectId={Number(projectId)}
                 contentType="spell-checker"
                 contentTitle="Reescrever Textos"
-                contentText={results?.errors.map(error => error.word).join(', ')}
+                contentText={results?.errors.map((error) => error.word).join(', ')}
                 contentUrl="/"
                 contentId={1}
                 projectName="Reescrever Textos"
@@ -165,19 +174,33 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
                 endpointFeedbackProject={endpointFeedbackProject}
               />
             )}
-            <button
-              ref={submitButtonRef}
-              type="button"
-              className={`${buttonStyles.cta.base} ${
-                isDisabled ? buttonStyles.cta.disabled : buttonStyles.cta.enabled
-              }`}
-              onClick={handleSubmit}
-              disabled={isDisabled}
-            >
-              <div className={`${buttonStyles.cta.text}`}>
-                {loading ? t('loading') : t('submit')}
-              </div>
-            </button>
+            {results && (
+              <button
+                type="button"
+                className={`relative ${buttonStyles.cta.base} ${
+                  isDisabled ? buttonStyles.cta.disabled : buttonStyles.cta.enabled
+                }`}
+                onClick={handleAcceptAll}
+                disabled={isDisabled}
+              >
+                <div className={`${buttonStyles.cta.text}`}>{t('editor.acceptAllCorrections')}</div>
+              </button>
+            )}
+            {!results && (
+              <button
+                ref={submitButtonRef}
+                type="button"
+                className={`${buttonStyles.cta.base} ${
+                  isDisabled ? buttonStyles.cta.disabled : buttonStyles.cta.enabled
+                }`}
+                onClick={handleSubmit}
+                disabled={isDisabled}
+              >
+                <div className={`${buttonStyles.cta.text}`}>
+                  {loading ? t('loading') : t('submit')}
+                </div>
+              </button>
+            )}
             {results && (
               <CopyButton
                 text={t('general.copy')}
@@ -196,4 +219,4 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
       )}
     </div>
   );
-}; 
+};

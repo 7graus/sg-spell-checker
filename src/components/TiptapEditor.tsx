@@ -31,9 +31,10 @@ interface TiptapEditorProps {
   warningUsageVisible?: boolean;
   onClear?: () => void;
   resultErrors?: Results;
+  onAcceptAll?: () => void;
 }
 
-export const TiptapEditor: React.FC<TiptapEditorProps> = ({
+export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, TiptapEditorProps>(({
   value,
   onChange,
   placeholder = '',
@@ -49,12 +50,16 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
   submitButtonRef,
   onClear,
   resultErrors,
-}) => {
+}, ref) => {
   const [warningCharsVisible, setWarningCharsVisible] = useState(true);
   const [warningUsageVisible, setWarningUsageVisible] = useState(true);
   const editorRef = useRef<HTMLDivElement>(null);
   const defaultSubmitButtonRef = useRef<HTMLButtonElement>(null);
-  const { editorHeight } = useEditorHeight({ isMobile, editorRef, submitButtonRef: submitButtonRef || defaultSubmitButtonRef });
+  const { editorHeight } = useEditorHeight({
+    isMobile,
+    editorRef,
+    submitButtonRef: submitButtonRef || defaultSubmitButtonRef,
+  });
 
   const preferedErrorSource = 'languageTools';
 
@@ -79,32 +84,32 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
     editorProps: {
       handlePaste: (_view, event) => {
         event.preventDefault();
-        
+
         // Get clipboard data
         const clipboardData = event.clipboardData;
         const html = clipboardData?.getData('text/html');
         const text = clipboardData?.getData('text/plain') || '';
-        
+
         if (editor) {
           const pos = editor.state.selection.from;
-          
+
           if (html) {
             // Create a temporary div to sanitize HTML
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = html;
-            
+
             // Remove meta tags and style attributes
             const metaTags = tempDiv.getElementsByTagName('meta');
             while (metaTags.length > 0) {
               metaTags[0].parentNode?.removeChild(metaTags[0]);
             }
-            
-            // Remove style attributes from all elements  
+
+            // Remove style attributes from all elements
             const allElements = tempDiv.getElementsByTagName('*');
             for (let i = 0; i < allElements.length; i++) {
               allElements[i].removeAttribute('style');
             }
-            
+
             // Get the cleaned HTML content
             const cleanHtml = tempDiv.innerHTML
               .replace(/<span[^>]*>/g, '') // Remove span opening tags
@@ -114,23 +119,17 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
               .replace(/<br\s*\/?>(?!\n)/g, '\n') // Convert br tags to newlines
               .replace(/\n\s*\n/g, '\n') // Remove multiple consecutive newlines
               .trim();
-            
-            editor.chain()
-              .focus()
-              .insertContentAt(pos, cleanHtml)
-              .run();
+
+            editor.chain().focus().insertContentAt(pos, cleanHtml).run();
           } else if (text) {
             // Mimic Quillbot: double newline = new paragraph, single newline = <br>
             const paragraphs = text.trim().split(/\r?\n\r?\n/);
             const html = paragraphs
-              .map(paragraph => `<p>${paragraph.replace(/\r?\n/g, '<br>')}</p>`)
+              .map((paragraph) => `<p>${paragraph.replace(/\r?\n/g, '<br>')}</p>`)
               .join('');
-            editor.chain()
-              .focus()
-              .insertContentAt(pos, html)
-              .run();
+            editor.chain().focus().insertContentAt(pos, html).run();
           }
-          
+
           onChange(editor.getText());
         }
         return true;
@@ -144,8 +143,8 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
         'data-gramm': 'false',
         'data-gramm_editor': 'false',
         'data-enable-grammarly': 'false',
-      }
-    }
+      },
+    },
   });
   const { t } = useTranslation();
   const buttonStyles = getButtonStyles();
@@ -160,12 +159,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
 
   useEffect(() => {
     if (editor && editor.getText() !== value) {
-      editor
-        .chain()
-        .setContent(value)
-        .focus()
-        .setTextSelection({ from: 0, to: 0 })
-        .run();
+      editor.chain().setContent(value).focus().setTextSelection({ from: 0, to: 0 }).run();
     }
   }, [value, editor]);
 
@@ -182,34 +176,34 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
   };
 
   const checkOverlap = (start: number, end: number, existingErrors: TextError[]): boolean => {
-    return existingErrors.some(error => 
-      (start >= error.start && start <= error.end) ||
-      (end >= error.start && end <= error.end)
+    return existingErrors.some(
+      (error) =>
+        (start >= error.start && start <= error.end) || (end >= error.start && end <= error.end)
     );
   };
 
   const handleErrorClick = (event: React.MouseEvent<HTMLSpanElement>) => {
     event.preventDefault();
     event.stopPropagation();
-  
+
     const element = event.target as HTMLElement;
-  
+
     // Remove active class from previous element if exists
     if (activeErrorRef.current) {
       activeErrorRef.current.classList.remove('error-active');
     }
-  
+
     // First: Clear hoveredError so ErrorHoverCard unmounts
     setHoveredError(null);
-  
+
     // Delay opening new one by 1 frame (to allow unmount first)
     requestAnimationFrame(() => {
       element.classList.add('error-active');
       activeErrorRef.current = element;
-  
+
       const suggestions = JSON.parse(element.getAttribute('data-suggestions') || '[]');
       const type = element.classList.contains('spelling-error') ? 'spelling' : 'grammar';
-  
+
       if (editor) {
         const pos = editor.view.posAtDOM(element, 0);
         const textContent = element.textContent || '';
@@ -218,7 +212,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
           suggestions,
           type,
           range: { from: pos, to: end },
-          element
+          element,
         });
       }
     });
@@ -245,6 +239,21 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
     //   document.removeEventListener('mousedown', handleClickOutside);
     // };
   }, [hoveredError]);
+
+  const hasRemainingErrors = () => {
+    if (!editor) return false;
+    let hasErrors = false;
+    editor.state.doc.descendants((node) => {
+      if (node.marks) {
+        node.marks.forEach(mark => {
+          if (mark.type.name === 'spellingError' || mark.type.name === 'grammarError') {
+            hasErrors = true;
+          }
+        });
+      }
+    });
+    return hasErrors;
+  };
 
   const handleSuggestionClick = (suggestion: string) => {
     if (editor && hoveredError && hoveredError.element) {
@@ -279,7 +288,15 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
         ])
         .run();
 
+      // Delete the error mark and content
+      editor.chain().focus().setTextSelection({ from, to }).unsetMark(errorType).deleteRange({ from, to }).run();
+
       handleCloseCard();
+
+      // Check if there are any remaining errors
+      if (!hasRemainingErrors()) {
+        onClear?.();
+      }
     }
   };
 
@@ -287,15 +304,69 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
     if (editor && hoveredError && hoveredError.element) {
       const { from, to } = hoveredError.range;
       const errorType = hoveredError.type === 'spelling' ? 'spellingError' : 'grammarError';
-      editor
-      .chain()
-      .focus()
-      .setTextSelection({ from, to })
-      .unsetMark(errorType)
-      .run();
-      
+      editor.chain().focus().setTextSelection({ from, to }).unsetMark(errorType).run();
+
       handleCloseCard();
     }
+  };
+
+  const handleAcceptAll = () => {
+    if (!editor || !resultErrors) return;
+
+    // Collect all corrections first
+    const corrections: { from: number; to: number; suggestion: string; type: string }[] = [];
+    
+    editor.state.doc.descendants((node, pos) => {
+      if (node.marks) {
+        node.marks.forEach(mark => {
+          if (mark.type.name === 'spellingError' || mark.type.name === 'grammarError') {
+            const suggestions = mark.attrs.suggestions || [];
+            if (suggestions.length > 0) {
+              corrections.push({
+                from: pos,
+                to: pos + node.nodeSize,
+                suggestion: suggestions[0],
+                type: mark.type.name
+              });
+            }
+          }
+        });
+      }
+    });
+
+    // Sort corrections by position in reverse order (end to start)
+    corrections.sort((a, b) => b.from - a.from);
+
+    // Apply corrections in reverse order
+    corrections.forEach(({ from, to, suggestion, type }) => {
+      editor
+        .chain()
+        .focus()
+        .setTextSelection({ from, to })
+        .unsetMark(type)
+        .setMark(type, {
+          errorCorrected: true,
+          source: preferedErrorSource,
+          suggestions: [suggestion],
+        })
+        .insertContentAt(to, [
+          {
+            type: 'text',
+            text: suggestion,
+            marks: [{ type: 'errorCorrection' }],
+          },
+        ])
+        .run();
+
+      // Delete the error mark and content
+      editor.chain().focus().setTextSelection({ from, to }).unsetMark(type).deleteRange({ from, to }).run();
+    });
+
+    // Clear all error marks after processing
+    editor.chain().focus().unsetAllMarks().run();
+
+    // Reset errors since all corrections have been applied
+    onClear?.();
   };
 
   const markErrorInEditor = (error: TextError) => {
@@ -320,7 +391,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
   };
 
   const checkText = async () => {
-    if(!resultErrors) return;
+    if (!resultErrors) return;
 
     editor?.commands.unsetAllMarks();
     const lastPositionMap = new Map<string, number>();
@@ -329,55 +400,63 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
     const originalText = editor?.getText() || '';
     // Primeiro processa os erros do LanguageTools
     errors
-    .filter(error => error.source === preferedErrorSource)
-    .forEach(originalError => {
-      const error = { ...originalError };
-      const wordAtPosition = originalText.slice(error.start, error.end);
-      if (wordAtPosition === error.word) {
-        processedErrors.push(error);
-      } else {
-        const lastPos = lastPositionMap.get(error.word) || 0;
-        const newPosition = findWordPosition(error.word, lastPos);
-        if (newPosition !== -1 && !checkOverlap(newPosition, newPosition + error.word.length, processedErrors)) {
-          error.start = newPosition;
-          error.end = newPosition + error.word.length;
-          lastPositionMap.set(error.word, newPosition + 1);
+      .filter((error) => error.source === preferedErrorSource)
+      .forEach((originalError) => {
+        const error = { ...originalError };
+        const wordAtPosition = originalText.slice(error.start, error.end);
+        if (wordAtPosition === error.word) {
           processedErrors.push(error);
+        } else {
+          const lastPos = lastPositionMap.get(error.word) || 0;
+          const newPosition = findWordPosition(error.word, lastPos);
+          if (
+            newPosition !== -1 &&
+            !checkOverlap(newPosition, newPosition + error.word.length, processedErrors)
+          ) {
+            error.start = newPosition;
+            error.end = newPosition + error.word.length;
+            lastPositionMap.set(error.word, newPosition + 1);
+            processedErrors.push(error);
+          }
         }
-      }
-    });
+      });
 
     // Depois processa os outros erros, evitando sobreposições
     errors
-    .filter(error => error.source !== preferedErrorSource)
-    .forEach(originalError => {
-      const error = { ...originalError };
-      const wordAtPosition = originalText.slice(error.start, error.end);
-      if (wordAtPosition === error.word && !checkOverlap(error.start, error.end, processedErrors)) {
-        processedErrors.push(error);
-      } else {
-        const lastPos = lastPositionMap.get(error.word) || 0;
-        const newPosition = findWordPosition(error.word, lastPos);
-        if (newPosition !== -1 && !checkOverlap(newPosition, newPosition + error.word.length, processedErrors)) {
-          error.start = newPosition;
-          error.end = newPosition + error.word.length;
-          lastPositionMap.set(error.word, newPosition + 1);
+      .filter((error) => error.source !== preferedErrorSource)
+      .forEach((originalError) => {
+        const error = { ...originalError };
+        const wordAtPosition = originalText.slice(error.start, error.end);
+        if (
+          wordAtPosition === error.word &&
+          !checkOverlap(error.start, error.end, processedErrors)
+        ) {
           processedErrors.push(error);
+        } else {
+          const lastPos = lastPositionMap.get(error.word) || 0;
+          const newPosition = findWordPosition(error.word, lastPos);
+          if (
+            newPosition !== -1 &&
+            !checkOverlap(newPosition, newPosition + error.word.length, processedErrors)
+          ) {
+            error.start = newPosition;
+            error.end = newPosition + error.word.length;
+            lastPositionMap.set(error.word, newPosition + 1);
+            processedErrors.push(error);
+          }
         }
-      }
-    });
+      });
 
-    errors.forEach(error => {
+    errors.forEach((error) => {
       markErrorInEditor(error);
     });
-    
-  }
+  };
 
   const handlePaste = async () => {
     try {
       const clipboardItems = await navigator.clipboard.read();
       let text = '';
-      
+
       for (const clipboardItem of clipboardItems) {
         for (const type of clipboardItem.types) {
           if (type === 'text/plain') {
@@ -391,12 +470,8 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
       if (text && editor) {
         // Insert text at current cursor position without creating new paragraphs
         const pos = editor.state.selection.from;
-        editor
-          .chain()
-          .focus()
-          .insertContentAt(pos, text)
-          .run();
-        
+        editor.chain().focus().insertContentAt(pos, text).run();
+
         onChange(editor.getText() || '');
       }
     } catch (err) {
@@ -464,6 +539,11 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
     );
   };
 
+  // Expose handleAcceptAll through ref
+  React.useImperativeHandle(ref, () => ({
+    handleAcceptAll
+  }));
+
   return (
     <div className="w-full h-full md:py-2 md:pl-4 md:pr-1 border-b border-gray-border-secondary md:border-0 relative">
       <div className="relative h-full flex flex-col justify-between">
@@ -490,12 +570,15 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
           tabIndex={0}
         >
           <div className="flex-grow w-full">
-            <EditorContent 
-              editor={editor} 
+            <EditorContent
+              editor={editor}
               className="w-full h-full"
               onClick={(e) => {
                 const target = e.target as HTMLElement;
-                if (target.classList.contains('spelling-error') || target.classList.contains('grammar-error')) {
+                if (
+                  target.classList.contains('spelling-error') ||
+                  target.classList.contains('grammar-error')
+                ) {
                   handleErrorClick(e as any);
                 }
               }}
@@ -551,27 +634,43 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
               {usageCount >= maxUsage && renderWarningTooltip('usage')}
             </div>
           )}
+
           {!isMobile && onSubmit && (
             <div className="relative">
-              <button
-                type="button"
-                className={`relative ${buttonStyles.cta.base} ${
-                  isDisabled
-                    ? buttonStyles.cta.disabled
-                    : buttonStyles.cta.enabled
-                }`}
-                onClick={onSubmit}
-                disabled={isDisabled}
-              >
-                <div className={`${buttonStyles.cta.text}`}>
-                  {loading ? t('loading') : t('submit')}
-                </div>
-                <ArrowRight className={`${buttonStyles.cta.text} w-5 h-5 ml-2`} />
-              </button>
+              {resultErrors && (
+                <button
+                  type="button"
+                  className={`relative ${buttonStyles.cta.base} ${
+                    isDisabled ? buttonStyles.cta.disabled : buttonStyles.cta.enabled
+                  }`}
+                  onClick={handleAcceptAll}
+                  disabled={isDisabled}
+                >
+                  <div className={`${buttonStyles.cta.text}`}>
+                    {t('editor.acceptAllCorrections')}
+                  </div>
+                  <ArrowRight className={`${buttonStyles.cta.text} w-5 h-5 ml-2`} />
+                </button>
+              )}
+              {!resultErrors && (
+                <button
+                  type="button"
+                  className={`relative ${buttonStyles.cta.base} ${
+                    isDisabled ? buttonStyles.cta.disabled : buttonStyles.cta.enabled
+                  }`}
+                  onClick={onSubmit}
+                  disabled={isDisabled}
+                >
+                  <div className={`${buttonStyles.cta.text}`}>
+                    {loading ? t('loading') : t('submit')}
+                  </div>
+                  <ArrowRight className={`${buttonStyles.cta.text} w-5 h-5 ml-2`} />
+                </button>
+              )}
             </div>
           )}
         </div>
       </div>
     </div>
   );
-}; 
+});
