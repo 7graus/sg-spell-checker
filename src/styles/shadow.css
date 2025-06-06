@@ -3,24 +3,21 @@
 @tailwind utilities;
 
 :host {
-  display: block;
-  width: 100%;
   font-family: 'Roboto', system-ui, -apple-system, sans-serif;
+  @apply w-full block;
 }
 
 /* Add any other global styles here */
 * {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+  @apply m-0 p-0 box-border;
 }
 
 .tiptap-editor {
-  position: relative;
+  @apply relative
 }
 
 .tiptap-editor > div {
-  width: 100%;
+  @apply w-full
 }
 
 .tiptap-editor .ProseMirror {
@@ -48,12 +45,11 @@
 }
 
 .tiptap-editor.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  @apply opacity-50 cursor-not-allowed;
 }
 
 .tiptap-editor.disabled .ProseMirror {
-  cursor: not-allowed;
+  @apply cursor-not-allowed;
 } 
 
 .tiptap-editor .spelling-error {
@@ -70,5 +66,19 @@
 
 .tiptap-editor .spelling-error.error-active {
   background-color: rgba(217, 48, 37, 0.2);
+}
+
+.tiptap-editor .error-active {
+  background-color: #f8f9fa;
+  box-shadow: 0 0 0 2px #3498db;
+}
+
+.tiptap-editor .error-correction {
+  color:rgb(26, 148, 77);
+  @apply font-medium;
+}
+
+.tiptap-editor .error-corrected {
+  @apply line-through opacity-50;
 }
 

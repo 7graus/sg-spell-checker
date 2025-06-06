@@ -88,8 +88,6 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
 
       const dataJson = await response.json();
       const data = dataJson.data;
-
-      console.log('data', data);
       
       if (data.errors) {
         setResults({ errors: data.errors });

@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { useEditorHeight } from '../hooks/useEditorHeight';
 import { SpellingErrorMark } from './editor-marks/SpellingErrorMark';
 import { GrammarErrorMark } from './editor-marks/GrammarErrorMark';
+import { ErrorCorrectionMark } from './editor-marks/ErrorCorrectionMark';
 import { Results, TextError } from '../types';
 import { ErrorHoverCard } from './ErrorHoverCard';
 
@@ -59,9 +60,12 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
 
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        heading: false,
+      }),
       SpellingErrorMark,
       GrammarErrorMark,
+      ErrorCorrectionMark,
       Placeholder.configure({
         placeholder,
       }),
@@ -167,7 +171,6 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
 
   useEffect(() => {
     if (resultErrors) {
-      console.log('start checking text');
       checkText();
     }
   }, [resultErrors]);
@@ -232,21 +235,31 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    // document.addEventListener('mousedown', handleClickOutside);
+    // return () => {
+    //   document.removeEventListener('mousedown', handleClickOutside);
+    // };
   }, [hoveredError]);
 
   const handleSuggestionClick = (suggestion: string) => {
-    if (editor && hoveredError) {
+    console.log('handleSuggestionClick', suggestion);
+    if (editor && hoveredError && hoveredError.element) {
+      console.log('hoveredError', hoveredError);
+      
+      // Get the position after the error element
+      const errorElement = hoveredError.element;
+      const errorEnd = editor.view.posAtDOM(errorElement, errorElement.childNodes.length);
+      
+      // Insert the correction as a new element after the error
       editor
         .chain()
         .focus()
-        .setTextSelection(hoveredError.range)
-        .deleteSelection()
-        .insertContent(suggestion)
+        .insertContentAt(errorEnd, ` <span class="error-correction">${suggestion}</span>`)
         .run();
+
+      // Add error-corrected class to the error element
+      errorElement.classList.add('error-corrected');
+
       handleCloseCard();
     }
   };
@@ -273,7 +286,6 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
 
   const checkText = async () => {
     if(!resultErrors) return;
-    console.log('resultErrors', resultErrors);
 
     editor?.commands.unsetAllMarks();
     const lastPositionMap = new Map<string, number>();

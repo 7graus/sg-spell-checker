@@ -50,3 +50,22 @@
   background-color: #f8f9fa;
   box-shadow: 0 0 0 2px #3498db;
 }
+
+.tiptap-editor .error-correction {
+  color: #27ae60;
+  font-weight: 500;
+  margin-right: 4px;
+}
+
+.tiptap-editor .error-corrected {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.tiptap-editor .error-correction {
+  opacity: 0.5;
+  text-decoration: line-through;
+  background-color: #f8f9fa;
+  box-shadow: 0 0 0 2px #3498db;
+}
+
