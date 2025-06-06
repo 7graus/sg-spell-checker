@@ -52,33 +52,33 @@
   @apply cursor-not-allowed;
 } 
 
-.tiptap-editor .spelling-error {
+.spelling-error {
   border-bottom: 3px solid #D93025;
 }
 
-.tiptap-editor .grammar-error {
+.grammar-error {
   border-bottom: 3px solid #9747FF;
 }
 
-.tiptap-editor .grammar-error.error-active {
+.grammar-error.error-active {
   background-color: #EEE1FF;
 }
 
-.tiptap-editor .spelling-error.error-active {
+.spelling-error.error-active {
   background-color: rgba(217, 48, 37, 0.2);
 }
 
-.tiptap-editor .error-active {
+.error-active {
   background-color: #f8f9fa;
   box-shadow: 0 0 0 2px #3498db;
 }
 
-.tiptap-editor .error-correction {
+.error-correction {
   color:rgb(26, 148, 77);
   @apply font-medium;
 }
 
-.tiptap-editor .error-corrected {
+.error-corrected {
   @apply line-through opacity-50 hidden mr-1;
 }
 
