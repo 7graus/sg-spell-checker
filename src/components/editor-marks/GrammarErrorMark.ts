@@ -5,7 +5,7 @@ export const GrammarErrorMark = Mark.create({
   addAttributes() {
     return {
       class: {
-        default: 'grammar-error',
+        default: 'grammar-error 222',
       },
       source: {
         default: null,
@@ -22,6 +22,15 @@ export const GrammarErrorMark = Mark.create({
           };
         },
       },
+      errorCorrected: {
+        default: false,
+        parseHTML: element => element.classList.contains('error-corrected'),
+        renderHTML: attributes => {
+          return {
+            class: attributes.errorCorrected ? 'error-corrected' : null,
+          };
+        },
+      },
     };
   },
   parseHTML() {
@@ -32,9 +41,16 @@ export const GrammarErrorMark = Mark.create({
     ];
   },
   renderHTML({ HTMLAttributes }) {
-    const source = HTMLAttributes.source
-      ? ` source-${HTMLAttributes.source}`
-      : '';
-    return ['span', { ...HTMLAttributes, class: `grammar-error${source}` }, 0];
+    const classes = ['grammar-error'];
+    if (HTMLAttributes.class) classes.push(HTMLAttributes.class);
+    if (HTMLAttributes.source) classes.push(`source-${HTMLAttributes.source}`);
+    return [
+      'span',
+      {
+        'data-suggestions': HTMLAttributes['data-suggestions'],
+        class: classes.join(' '),
+      },
+      0,
+    ];
   },
 });

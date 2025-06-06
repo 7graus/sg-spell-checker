@@ -242,23 +242,37 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
   }, [hoveredError]);
 
   const handleSuggestionClick = (suggestion: string) => {
-    console.log('handleSuggestionClick', suggestion);
     if (editor && hoveredError && hoveredError.element) {
-      console.log('hoveredError', hoveredError);
-      
-      // Get the position after the error element
-      const errorElement = hoveredError.element;
-      const errorEnd = editor.view.posAtDOM(errorElement, errorElement.childNodes.length);
-      
-      // Insert the correction as a new element after the error
+      const { from, to } = hoveredError.range;
+      const errorType = hoveredError.type === 'spelling' ? 'spellingError' : 'grammarError';
+
+      // Remove any existing correction after the error
+      const afterErrorPos = to;
+      const doc = editor.state.doc;
+      const afterErrorNode = doc.nodeAt(afterErrorPos);
+      if (
+        afterErrorNode &&
+        afterErrorNode.marks &&
+        afterErrorNode.marks.some(mark => mark.type.name === 'errorCorrection')
+      ) {
+        editor.chain().focus().deleteRange({ from: afterErrorPos, to: afterErrorPos + afterErrorNode.nodeSize }).run();
+      }
+
+      // Set selection to the error's range and set the mark
       editor
         .chain()
         .focus()
-        .insertContentAt(errorEnd, ` <span class="error-correction">${suggestion}</span>`)
+        .setTextSelection({ from, to })
+        .unsetMark(errorType)
+        .setMark(errorType, { errorCorrected: true, source: preferedErrorSource, suggestions: hoveredError.suggestions })
+        .insertContentAt(afterErrorPos, [
+          {
+            type: 'text',
+            text: suggestion,
+            marks: [{ type: 'errorCorrection' }],
+          },
+        ])
         .run();
-
-      // Add error-corrected class to the error element
-      errorElement.classList.add('error-corrected');
 
       handleCloseCard();
     }
@@ -277,6 +291,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
         .setMark(error.type === 'spelling' ? 'spellingError' : 'grammarError', {
           source: error.source,
           suggestions: error.suggestions || [],
+          errorCorrected: false,
         })
         .run();
     } catch (e) {

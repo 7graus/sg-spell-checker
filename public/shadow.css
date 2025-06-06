@@ -1227,6 +1227,11 @@ video {
   border-color: rgb(19 93 190 / var(--tw-border-opacity, 1));
 }
 
+.border-gray-200 {
+  --tw-border-opacity: 1;
+  border-color: rgb(229 231 235 / var(--tw-border-opacity, 1));
+}
+
 .border-gray-300 {
   --tw-border-opacity: 1;
   border-color: rgb(209 213 219 / var(--tw-border-opacity, 1));
@@ -1544,6 +1549,11 @@ video {
   color: rgb(26 115 232 / var(--tw-text-opacity, 1));
 }
 
+.text-blue-600 {
+  --tw-text-opacity: 1;
+  color: rgb(37 99 235 / var(--tw-text-opacity, 1));
+}
+
 .text-blue-dark {
   --tw-text-opacity: 1;
   color: rgb(19 93 190 / var(--tw-text-opacity, 1));
@@ -1552,6 +1562,11 @@ video {
 .text-gray-500 {
   --tw-text-opacity: 1;
   color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+}
+
+.text-gray-700 {
+  --tw-text-opacity: 1;
+  color: rgb(55 65 81 / var(--tw-text-opacity, 1));
 }
 
 .text-gray-900 {
@@ -1701,17 +1716,17 @@ video {
 }
 
 :host {
+  font-family: 'Roboto', system-ui, -apple-system, sans-serif;
   display: block;
   width: 100%;
-  font-family: 'Roboto', system-ui, -apple-system, sans-serif;
 }
 
 /* Add any other global styles here */
 
 * {
+  margin: 0px;
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+  padding: 0px;
 }
 
 .tiptap-editor {
@@ -1747,8 +1762,8 @@ video {
 }
 
 .tiptap-editor.disabled {
-  opacity: 0.5;
   cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .tiptap-editor.disabled .ProseMirror {
@@ -1756,13 +1771,34 @@ video {
 }
 
 .tiptap-editor .spelling-error {
-  background-color: rgba(217, 48, 37, 0.2);
   border-bottom: 3px solid #D93025;
 }
 
 .tiptap-editor .grammar-error {
-  background-color: #EEE1FF;
   border-bottom: 3px solid #9747FF;
+}
+
+.tiptap-editor .grammar-error.error-active {
+  background-color: #EEE1FF;
+}
+
+.tiptap-editor .spelling-error.error-active {
+  background-color: rgba(217, 48, 37, 0.2);
+}
+
+.tiptap-editor .error-active {
+  background-color: #f8f9fa;
+  box-shadow: 0 0 0 2px #3498db;
+}
+
+.tiptap-editor .error-correction {
+  color:rgb(26, 148, 77);
+  font-weight: 500;
+}
+
+.tiptap-editor .error-corrected {
+  text-decoration-line: line-through;
+  opacity: 0.5;
 }
 
 .before\:absolute::before {
@@ -1870,6 +1906,11 @@ video {
 .hover\:border-gray-border-hover:hover {
   --tw-border-opacity: 1;
   border-color: rgb(152 161 174 / var(--tw-border-opacity, 1));
+}
+
+.hover\:bg-blue-50:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(239 246 255 / var(--tw-bg-opacity, 1));
 }
 
 .hover\:bg-blue-dark:hover {
@@ -2230,3 +2271,4 @@ video {
     box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
   }
 }
+

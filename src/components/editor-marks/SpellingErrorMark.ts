@@ -22,6 +22,15 @@ export const SpellingErrorMark = Mark.create({
           };
         },
       },
+      errorCorrected: {
+        default: false,
+        parseHTML: element => element.classList.contains('error-corrected'),
+        renderHTML: attributes => {
+          return {
+            class: attributes.errorCorrected ? 'error-corrected' : null,
+          };
+        },
+      },
     };
   },
   parseHTML() {
@@ -32,9 +41,16 @@ export const SpellingErrorMark = Mark.create({
     ];
   },
   renderHTML({ HTMLAttributes }) {
-    const source = HTMLAttributes.source
-      ? ` source-${HTMLAttributes.source}`
-      : '';
-    return ['span', { ...HTMLAttributes, class: `spelling-error${source}` }, 0];
+    const classes = ['spelling-error'];
+    if (HTMLAttributes.class) classes.push(HTMLAttributes.class);
+    if (HTMLAttributes.source) classes.push(`source-${HTMLAttributes.source}`);
+    return [
+      'span',
+      {
+        'data-suggestions': HTMLAttributes['data-suggestions'],
+        class: classes.join(' '),
+      },
+      0,
+    ];
   },
 });

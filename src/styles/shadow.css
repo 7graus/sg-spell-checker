@@ -79,6 +79,7 @@
 }
 
 .tiptap-editor .error-corrected {
-  @apply line-through opacity-50;
+  @apply line-through opacity-50 hidden mr-1;
 }
+
 
