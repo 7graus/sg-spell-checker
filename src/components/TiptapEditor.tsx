@@ -283,6 +283,21 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
     }
   };
 
+  const handleIgnoreClick = () => {
+    if (editor && hoveredError && hoveredError.element) {
+      const { from, to } = hoveredError.range;
+      const errorType = hoveredError.type === 'spelling' ? 'spellingError' : 'grammarError';
+      editor
+      .chain()
+      .focus()
+      .setTextSelection({ from, to })
+      .unsetMark(errorType)
+      .run();
+      
+      handleCloseCard();
+    }
+  };
+
   const markErrorInEditor = (error: TextError) => {
     if (!editor) return;
 
@@ -490,6 +505,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
                 key={`${hoveredError.range.from}-${hoveredError.range.to}`}
                 suggestions={hoveredError.suggestions}
                 onSuggestionClick={handleSuggestionClick}
+                onIgnoreClick={handleIgnoreClick}
                 onClose={handleCloseCard}
                 targetElement={hoveredError.element}
                 type={hoveredError.type}

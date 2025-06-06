@@ -41,6 +41,7 @@ const resources = {
             spelling: 'Erro Ortográfico',
             grammar: 'Erro Gramatical',
           },
+          ignore: 'Ignorar',
         },
       },
       style: {

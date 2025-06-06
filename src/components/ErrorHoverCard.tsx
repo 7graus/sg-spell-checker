@@ -6,6 +6,7 @@ interface ErrorHoverCardProps {
   suggestions: string[];
   type: 'spelling' | 'grammar';
   onSuggestionClick: (suggestion: string) => void;
+  onIgnoreClick: () => void;
   onClose: () => void;
   targetElement: HTMLElement | null;
 }
@@ -14,6 +15,7 @@ export const ErrorHoverCard: React.FC<ErrorHoverCardProps> = ({
   suggestions,
   type,
   onSuggestionClick,
+  onIgnoreClick,
   onClose,
   targetElement,
 }) => {
@@ -25,10 +27,7 @@ export const ErrorHoverCard: React.FC<ErrorHoverCardProps> = ({
     const updatePosition = () => {
       if (!targetElement || !cardRef.current) return;
       const rect = targetElement.getBoundingClientRect();
-      console.log(document.querySelector(targetElement.className));
-      console.log('--------------------------------');
-      console.log('targetElement', targetElement);
-      console.log('rect', rect);
+
       const cardHeight = cardRef.current.offsetHeight;
       const cardWidth = cardRef.current.offsetWidth;
       const windowHeight = window.innerHeight;
@@ -68,7 +67,7 @@ export const ErrorHoverCard: React.FC<ErrorHoverCardProps> = ({
   return (
     <div
       ref={cardRef}
-      className="error-card fixed z-[9999] bg-white rounded-lg shadow-lg border border-gray-200 p-3 min-w-[200px]"
+      className="error-card fixed z-[9999] bg-white rounded-lg shadow-lg border border-gray-200 p-3 min-w-[200px] animate-fade-down-subtle max-w-[300px]"
       style={{
         top: `${position.top}px`,
         left: `${position.left}px`,
@@ -85,22 +84,28 @@ export const ErrorHoverCard: React.FC<ErrorHoverCardProps> = ({
           {t(`editor.card.title.${type}`)}
         </div>
         <button
-          onClick={onClose}
+          onClick={onClose} 
           className="p-1 hover:bg-gray-100 rounded-full transition-colors absolute top-2 right-2"
         >
           <X size={16} className="text-gray-500" />
         </button>
       </div>
-      <div className="space-y-1">
+      <div className="flex flex-row flex-wrap gap-2">
         {suggestions.map((suggestion, index) => (
           <button
             key={index}
-            className="w-full text-left px-2 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded"
+            className="text-left px-2 py-1 text-sm text-blue-600 border border-blue-600 rounded-full hover:bg-blue-50"
             onClick={() => onSuggestionClick(suggestion)}
           >
             {suggestion}
           </button>
         ))}
+        <button
+            className="text-left px-2 py-1 text-sm text-[#566981] border border-[#566981] rounded-full hover:bg-blue-50"
+            onClick={onIgnoreClick}
+          >
+            {t('editor.card.ignore')}
+          </button>
       </div>
     </div>
   );
