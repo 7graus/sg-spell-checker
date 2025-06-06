@@ -91,7 +91,8 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
         const text = clipboardData?.getData('text/plain') || '';
 
         if (editor) {
-          const pos = editor.state.selection.from;
+          const { from, to } = editor.state.selection;
+          const isTextSelected = from !== to;
 
           if (html) {
             // Create a temporary div to sanitize HTML
@@ -114,20 +115,27 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
             const cleanHtml = tempDiv.innerHTML
               .replace(/<span[^>]*>/g, '') // Remove span opening tags
               .replace(/<\/span>/g, '') // Remove span closing tags
-              // .replace(/<div[^>]*>/g, '<p>') // Convert divs to paragraphs
-              // .replace(/<\/div>/g, '</p>')
               .replace(/<br\s*\/?>(?!\n)/g, '\n') // Convert br tags to newlines
               .replace(/\n\s*\n/g, '\n') // Remove multiple consecutive newlines
               .trim();
 
-            editor.chain().focus().insertContentAt(pos, cleanHtml).run();
+            if (isTextSelected) {
+              editor.chain().focus().deleteRange({ from, to }).insertContentAt(from, cleanHtml).run();
+            } else {
+              editor.chain().focus().insertContentAt(from, cleanHtml).run();
+            }
           } else if (text) {
             // Mimic Quillbot: double newline = new paragraph, single newline = <br>
             const paragraphs = text.trim().split(/\r?\n\r?\n/);
             const html = paragraphs
               .map((paragraph) => `<p>${paragraph.replace(/\r?\n/g, '<br>')}</p>`)
               .join('');
-            editor.chain().focus().insertContentAt(pos, html).run();
+
+            if (isTextSelected) {
+              editor.chain().focus().deleteRange({ from, to }).insertContentAt(from, html).run();
+            } else {
+              editor.chain().focus().insertContentAt(from, html).run();
+            }
           }
 
           onChange(editor.getText());
