@@ -1,18 +1,16 @@
 import React, { useState } from 'react';
 import { Copy, Check } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface CopyButtonProps {
-  text: string;
-  textCopied: string;
   value: string;
 }
 
 export const CopyButton: React.FC<CopyButtonProps> = ({
-  text,
-  textCopied,
   value,
 }) => {
   const [copied, setCopied] = useState(false);
+  const { t } = useTranslation();
 
   const handleCopy = async () => {
     try {
@@ -31,19 +29,19 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
      <button
       type="button"
       onClick={handleCopy}
-      className={`border rounded-full text-sm py-1.5 px-3 flex items-center gap-1 transition-all duration-300
+      aria-label={copied ? t('general.copied') : t('general.copy')}
+      className={`w-[36px] h-[36px] cursor-pointer border rounded-full flex items-center justify-center transition-all duration-300
         ${
           copied
             ? 'bg-green-success border-green-success-border text-white'
-            : 'text-gray-button hover:bg-gray-bg border-gray-border-secondary'
+            : 'hover:bg-gray-bg border-gray-border-secondary text-gray-text-secondary'
         }`}
       
     >
-      <span>{copied ? textCopied : text}</span>
       {copied ? (
-        <Check className="h-4 w-4" aria-hidden="true" />
+        <Check size={17}  />
       ) : (
-        <Copy className="h-4 w-4" aria-hidden="true" />
+        <Copy size={17}  />
       )}
     </button>
   );

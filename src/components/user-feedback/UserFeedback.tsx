@@ -145,7 +145,7 @@ export const UserFeedback: React.FC<UserFeedbackProps> = ({
           />
         )}
         <div
-          className={`z-20 max-md:fixed max-md:bottom-0 max-md:left-0 md:absolute md:-ml-2 md:-mr-2 w-full md:w-[calc(100%-1rem)] md:min-h-[165px] md:bottom-[45px] bg-gray-bg-light md:bg-gray-bg rounded-t-xl md:rounded-xl p-3 max-md:pb-4 md:p-2 border border-gray-border shadow-md flex flex-col ${
+          className={`z-20 max-md:fixed max-md:bottom-0 max-md:left-0 md:absolute md:ml-2 md:-mr-2 w-full md:w-[calc(100%-1rem)] md:max-w-[400px] md:min-h-[165px] md:bottom-[45px] bg-gray-bg-light md:bg-gray-bg rounded-t-xl md:rounded-xl p-3 max-md:pb-4 md:p-2 border border-gray-border shadow-md flex flex-col ${
             showSuccess ? 'justify-center' : ''
           }`}
         >
@@ -211,7 +211,10 @@ export const UserFeedback: React.FC<UserFeedbackProps> = ({
   return (
     <>
       {isMobile && showExtraFeedback && renderExtraFeedback()}
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1.5 pl-2">
+        {!isMobile && (
+          <span className="text-sm text-[#525B66] font-bold">{t('feedback.question')}</span>
+        )}
         <button
           className={`rounded-full border p-2 transition-all duration-300 hover:bg-gray-bg ${
             ratingValue === '100' ? 'border-gray-border-active' : 'border-gray-border-inactive'

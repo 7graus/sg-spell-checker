@@ -31,7 +31,7 @@ export default {
             disabled: '#9FA8B2',
           },
           button: {
-            DEFAULT: '#647A96',
+            DEFAULT: '#A0AEC0',
             hover: '#2272B9',
           },
           bg: {

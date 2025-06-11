@@ -31,6 +31,12 @@ const resources = {
         title: 'Palavras para excluir',
         placeholder: 'Digite as palavras que você deseja excluir...',
       },
+      info: {
+        errors: {
+          spelling: 'Erros Ortográficos',
+          grammar: 'Erros Gramaticais',
+        },
+      },
       editor: {
         main: {
           label: 'Texto para verificar',
@@ -112,7 +118,7 @@ const resources = {
         usageLimitReached: 'Você atingiu o limite diário de utilizações.',
       },
       feedback: {
-        question: 'O resultado foi útil?',
+        question: 'O que achou da correção?',
         comment: 'Deixe um comentário (opcional)',
         submit: 'Enviar',
         submitting: 'Enviando...',
