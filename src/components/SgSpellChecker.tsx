@@ -118,7 +118,7 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
         setLogId(data.logId.toString());
       }
 
-      if (!isPro) {
+      if (!isPro && !recheck) {
         incrementUsage();
       }
     } catch (err: any) {
