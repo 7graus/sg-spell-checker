@@ -13,9 +13,9 @@ const resources = {
         usage: 'Utilizações',
         characters: 'Caracteres',
         paste: 'Colar texto',
-        'info1-mobile': 'Insira ou use o botão para colar. Depois, aperte Verificar Texto.',
+        'info1-mobile': 'Insira ou use o botão para colar.',
         'info1-desktop':
-          'Insira ou cole seu texto (Ctrl + V) ou use o botão para colar. Depois, aperte Verificar Texto.',
+          'Insira ou cole seu texto (Ctrl + V) ou use o botão para colar.',
         info2: 'Frase ou pequeno texto',
         info4: 'Seu texto aparecerá aqui...',
       },

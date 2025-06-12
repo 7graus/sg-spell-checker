@@ -28,4 +28,7 @@ export const getButtonStyles = () => ({
   gray: {
     base: 'px-3 py-1.5 text-sm border border-gray-border-dark rounded-full flex items-center gap-2 text-gray-text-secondary hover:bg-gray-bg transition-all duration-200',
   },
+  blue: {
+    base: 'px-3 py-1.5 text-sm border border-blue-600 rounded-full flex items-center gap-2 text-blue-600 hover:bg-gray-bg transition-all duration-200',
+  },
 });

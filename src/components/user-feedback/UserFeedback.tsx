@@ -13,6 +13,7 @@ interface UserFeedbackProps {
   endpoint?: string;
   logId?: string | null;
   endpointFeedbackProject?: string;
+  resetKey?: number;
 }
 
 export const UserFeedback: React.FC<UserFeedbackProps> = ({
@@ -26,6 +27,7 @@ export const UserFeedback: React.FC<UserFeedbackProps> = ({
   endpoint = '',
   logId = '',
   endpointFeedbackProject,
+  resetKey,
 }) => {
   const { t } = useTranslation();
   const [feedbackText, setFeedbackText] = useState('');
@@ -47,12 +49,16 @@ export const UserFeedback: React.FC<UserFeedbackProps> = ({
     };
   }, []);
 
+  useEffect(() => {
+    setIdResponse('');
+  }, [resetKey]);
+
   const postFeedback = async (submitBtn = false, ratingNps = '', ratingValue = '') => {
     if (hp) return;
 
     const promises = [];
 
-    if (endpointFeedbackProject) {
+    if (endpointFeedbackProject && logId) {
       promises.push(
         fetch(`${endpointFeedbackProject}`, {
           method: 'POST',
@@ -63,7 +69,7 @@ export const UserFeedback: React.FC<UserFeedbackProps> = ({
           body: JSON.stringify({
             rating_nps: ratingNps,
             rating_note: feedbackText,
-            log_id: logId,
+            log_id: logId || null,
           }),
         }).then(response => response.json())
       );
@@ -211,7 +217,7 @@ export const UserFeedback: React.FC<UserFeedbackProps> = ({
   return (
     <>
       {isMobile && showExtraFeedback && renderExtraFeedback()}
-      <div className="flex items-center gap-1.5 pl-2">
+      <div className="flex items-center gap-1.5 pl-2 h-[40px]">
         {!isMobile && (
           <span className="text-sm text-[#525B66] font-bold">{t('feedback.question')}</span>
         )}

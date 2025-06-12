@@ -82,7 +82,7 @@ export const ConversionPopup: React.FC<ConversionPopupProps> = ({
                     })
                   );
                 }}
-                className={`${buttonStyles.cta.base} ${buttonStyles.cta.enabled} ${buttonStyles.cta.shine} gap-2 px-2`}
+                className={`${buttonStyles.cta.blue} ${buttonStyles.cta.base} ${buttonStyles.cta.enabled} ${buttonStyles.cta.shine} gap-2 px-2`}
               >
                 <LockOpen size={18} className="text-white" />
                 <span className={buttonStyles.cta.text}>
@@ -96,7 +96,7 @@ export const ConversionPopup: React.FC<ConversionPopupProps> = ({
         <div className="flex justify-center mb-5">
           <button
             onClick={onClose}
-            className="text-gray-text hover:text-gray-text-secondary transition-colors underline hover:no-underline font-bold antialiased text-lg"
+            className={`text-gray-text hover:text-gray-text-secondary transition-colors underline hover:no-underline font-bold antialiased text-lg`}
           >
             {t('convertionSite.popupUsage.close')}
           </button>

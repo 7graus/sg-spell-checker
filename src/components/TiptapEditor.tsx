@@ -28,7 +28,7 @@ interface TiptapEditorProps {
   isLimitReached?: boolean;
   isMobile?: boolean;
   loading?: boolean;
-  onSubmit?: () => void;
+  onSubmit?: (text: string) => void;
   isDisabled?: boolean;
   langCode?: string;
   submitButtonRef?: React.RefObject<HTMLButtonElement>;
@@ -150,7 +150,8 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
               }
             }
 
-            onChange(editor.getText());
+            const newText = editor.getText();
+            onChange(newText);
           }
           return true;
         },
@@ -189,6 +190,12 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
         checkText();
       }
     }, [resultErrors]);
+
+    useEffect(() => {
+      if (editor) {
+        editor.commands.focus();
+      }
+    }, [editor]);
 
     const findWordPosition = (word: string, startFrom: number = 0): number => {
       if (!editor) return -1;
@@ -492,6 +499,7 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
     };
 
     const handlePaste = async () => {
+      console.log('handlePaste');
       try {
         const clipboardItems = await navigator.clipboard.read();
         let text = '';
@@ -511,7 +519,8 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
           const pos = editor.state.selection.from;
           editor.chain().focus().insertContentAt(pos, text).run();
 
-          onChange(editor.getText() || '');
+          const newText = editor.getText();
+          onChange(newText);
         }
       } catch (err) {
         console.error('Failed to read clipboard contents: ', err);
@@ -646,15 +655,15 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
               {!value && (
                 <button
                   onClick={handlePaste}
-                  className={`absolute top-[70px] md:top-[80px] left-1/2 max-md:-translate-x-1/2 md:left-0 px-3 py-1.5 text-gray-text-secondary hover:bg-gray-100 flex items-center gap-2 ${buttonStyles.gray.base}`}
+                  className={`absolute top-[70px] md:top-[80px] left-1/2 max-md:-translate-x-1/2 md:left-0 px-3 py-1.5 hover:bg-gray-100 flex items-center gap-2 ${buttonStyles.blue.base}`}
                 >
                   <Clipboard size={15} />
                   {t('general.paste')}
                 </button>
               )}
-              {value && (
-                <div className="absolute bottom-[-20px] md:bottom-[-12px] shadow-editor left-0 w-full h-5 bg-white pointer-events-none" />
-              )}
+              
+              <div className={`absolute bottom-[-20px] md:bottom-[-12px] shadow-editor left-0 w-full h-5 bg-white pointer-events-none before:absolute before:bottom-[20px] before:left-0 before:w-[30px] before:h-1 before:bg-gradient-to-r before:from-white before:to-transparent after:absolute after:bottom-[20px] after:right-0 after:w-[50px] after:h-1 after:bg-gradient-to-l after:from-white after:to-transparent transition-opacity duration-300 ${!value ? 'opacity-0' : 'opacity-100'}`} />
+              
             </div>
           </div>
           <div

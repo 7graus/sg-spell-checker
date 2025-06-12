@@ -8,7 +8,6 @@ import { useUsage } from '../hooks/useUsage';
 import { useAuthContext } from '../hooks/useAuthContext';
 import { ConversionPopup } from './ConversionPopup';
 import { UserFeedback } from './user-feedback/UserFeedback';
-import { SubmitButton } from './buttons/SubmitButton';
 import { AcceptAllButton } from './buttons/AcceptAllButton';
 
 interface SgSpellCheckerProps {
@@ -32,26 +31,40 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
   const [logId, setLogId] = useState<string | null>(null);
   const { usageCount, maxUsage, incrementUsage, isLimitReached } = useUsage(tag);
   const { isPro } = useAuthContext();
-  // const [editorValue, setEditorValue] = useState('');
-  const [editorValue, setEditorValue] = useState(
-    'Seja para corrigir e-meils profissionais, trabalhos acadêmicos, mensagens importantes ou qalquer outro tipo de texto, nossa ferramenta é a escolha ideal. Com tecnologia avançada de IA, identificamos erros ortográficos, gramaticais e oferecemos sugestões precisas de coreção.'
-  );
+  const [editorValue, setEditorValue] = useState('');
+  // const [editorValue, setEditorValue] = useState(
+  //   'Seja para corrigir e-meils profissionais, trabalhos acadêmicos, mensagens importantes ou qalquer outro tipo de texto, nossa ferramenta é a escolha ideal. Com tecnologia avançada de IA, identificamos erros ortográficos, gramaticais e oferecemos sugestões precisas de coreção.'
+  // );
   const { isMobile } = useResponsive();
   const submitButtonRef = useRef<HTMLButtonElement>(null);
   const editorRef = useRef<{ handleAcceptAll: () => void }>(null);
   const [isSecondToLastAttempt, setIsSecondToLastAttempt] = useState(false);
+  const [recheck, setRecheck] = useState(false);
+  const [feedbackResetKey, setFeedbackResetKey] = useState(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const MAX_CHARS = 1000; // Define max chars constant
 
   const [warningUsageVisible, setWarningUsageVisible] = useState(false);
 
   useEffect(() => {
-    if (!isPro && isLimitReached && !isSecondToLastAttempt) {
+    if (!isPro && isLimitReached && !isSecondToLastAttempt && !recheck) {
       setWarningUsageVisible(true);
     }
   }, [isPro, isLimitReached, isSecondToLastAttempt]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (valueOverride?: string) => {
+
+    if(isDisabled) {
+      return;
+    }
+    // Cancel previous request if still running
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     if (usageCount === maxUsage - 1) {
       setIsSecondToLastAttempt(true);
     } else {
@@ -63,7 +76,8 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
       return;
     }
 
-    if (editorValue.length === 0) {
+    const textToSubmit = valueOverride !== undefined ? valueOverride : editorValue;
+    if (textToSubmit.length === 0) {
       setError('Please enter a text to detect AI');
       return;
     }
@@ -71,18 +85,21 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
     setLoading(true);
     setError(null);
     setLogId(null);
-    setResults(null);
+    if(!recheck){
+      setResults(null);
+    }
 
     try {
-
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          text: editorValue,
+          text: textToSubmit,
+          recheck: recheck,
         }),
+        signal: controller.signal,
       });
 
       if (!response.ok) {
@@ -104,7 +121,11 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
       if (!isPro) {
         incrementUsage();
       }
-    } catch (err: unknown) {
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        // Request was cancelled, do nothing
+        return;
+      }
       console.error('Stream error:', err);
       if (err instanceof Error) {
         setError(err.message);
@@ -113,6 +134,8 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
       }
     } finally {
       setLoading(false);
+      setRecheck(true);
+      abortControllerRef.current = null;
     }
   };
 
@@ -124,16 +147,48 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
   });
 
   const handleClear = () => {
+    // Abort any active request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
     setResults(null);
     setLogId(null);
+    setRecheck(false);
+    setFeedbackResetKey((k) => k + 1);
   };
 
   const handleAcceptAll = () => {
     editorRef.current?.handleAcceptAll();
   };
 
+  // Clear results when editor is emptied
+  useEffect(() => {
+    if (editorValue === '' && (results || logId)) {
+      handleClear();
+    }
+  }, [editorValue]);
+
+  // Debounce submit: call handleSubmit 1.5s after user stops typing
+  useEffect(() => {
+    if (editorValue.length === 0) return;
+    const timeout = recheck ? 1500 : 300;
+    
+    const handler = setTimeout(() => {
+      handleSubmit(editorValue);
+    }, timeout);
+    return () => clearTimeout(handler);
+  }, [editorValue]);
+
   return (
-    <div className="block md:border md:border-gray-border-secondary rounded-lg md:shadow-lg md:bg-white mx-auto">
+    <div className="block relative md:border md:border-gray-border-secondary rounded-lg md:shadow-lg md:bg-white mx-auto overflow-hidden">
+      {loading && (
+        <div className="absolute top-0 left-0 w-full h-[2px] bg-blue-600 overflow-hidden opacity-50">
+          <div
+            className="absolute h-full w-[40%] bg-blue-100 animate-sg-bar-loading"
+          />
+        </div>
+      )}
       <div className="flex flex-col border shadow-xl md:shadow-none rounded-lg md:rounded-none border-gray-border-secondary md:border-0 bg-white md:bg-transparent">
         <div className="w-full flex flex-col justify-between">
           <TiptapEditor
@@ -157,39 +212,30 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
           />
         </div>
 
-        <div
-          className={`relative w-full p-2 flex items-center
-            ${results ? 'justify-between' : isMobile ? 'justify-center' : 'justify-end'}
-            `}
-        >
-          {results && logId && (
-            <UserFeedback
-              endpoint="https://api.7gra.us/feedback/v1"
-              projectId={Number(projectId)}
-              contentType="spell-checker"
-              contentTitle="Reescrever Textos"
-              contentText={results?.errors?.map((error) => error.word).join(', ')}
-              contentUrl="/"
-              contentId={1}
-              projectName="Reescrever Textos"
-              logId={logId}
-              endpointFeedbackProject={endpointFeedbackProject}
-            />
-          )}
+        <div className={`relative w-full p-2 flex items-center justify-between`}>
+          <UserFeedback
+            endpoint="https://api.7gra.us/feedback/v1"
+            projectId={Number(projectId)}
+            contentType="spell-checker"
+            contentTitle="Reescrever Textos"
+            contentText={results?.errors?.map((error) => error.word).join(', ')}
+            contentUrl="/"
+            contentId={1}
+            projectName="Reescrever Textos"
+            logId={logId || null}
+            endpointFeedbackProject={endpointFeedbackProject}
+            resetKey={feedbackResetKey}
+          />
+
           {results && results.errors.length > 0 && (
-            <AcceptAllButton successMessage={false} isDisabled={isDisabled} handleAcceptAll={handleAcceptAll} />
-          )}
-          {(!results || results.errors.length === 0) && (
-            <SubmitButton
-              showIcon={isMobile}
+            <AcceptAllButton
+              successMessage={false}
               isDisabled={isDisabled}
-              onSubmit={handleSubmit}
-              loading={loading}
+              handleAcceptAll={handleAcceptAll}
             />
           )}
         </div>
       </div>
-
       {warningUsageVisible && (
         <div className="fixed inset-0 z-[9999]" id="conversion-popup-container">
           <ConversionPopup onClose={() => setWarningUsageVisible(false)} />

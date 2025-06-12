@@ -66,6 +66,11 @@ export default {
         },
       },
       keyframes: {
+        'sg-bar-loading': {
+          '0%': { left: '-40%', width: '40%' },
+          '50%': { left: '20%', width: '60%' },
+          '100%': { left: '100%', width: '40%' },
+        },
         fade: {
           '0%': {
             opacity: '0',
@@ -181,6 +186,7 @@ export default {
         },
       },
       animation: {
+        'sg-bar-loading': 'sg-bar-loading 1.2s infinite linear',
         fade: 'fade 0.5s ease-out',
         'slide-up': 'slide-up 0.3s ease-out',
         'slide-down': 'slide-down 0.3s ease-out',

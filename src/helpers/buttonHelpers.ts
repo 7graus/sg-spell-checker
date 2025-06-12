@@ -12,6 +12,8 @@ export function isSubmitDisabled(params: {
   // Check if editor has content (optional)
   // if (editorValue !== undefined && editorValue.trim().length === 0) return true;
 
+  if (editorValue && editorValue?.length >= maxChars) return true;
+
   // Check character limit for non-pro users
   if (!isPro && editorValue !== undefined && editorValue.length > maxChars) return true;
 
