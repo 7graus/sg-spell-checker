@@ -847,6 +847,10 @@ video {
   height: 0.5rem;
 }
 
+.h-3 {
+  height: 0.75rem;
+}
+
 .h-5 {
   height: 1.25rem;
 }
@@ -893,6 +897,10 @@ video {
 
 .w-2 {
   width: 0.5rem;
+}
+
+.w-3 {
+  width: 0.75rem;
 }
 
 .w-5 {
@@ -1600,6 +1608,11 @@ video {
 
 .leading-none {
   line-height: 1;
+}
+
+.text-\[\#008F7C\] {
+  --tw-text-opacity: 1;
+  color: rgb(0 143 124 / var(--tw-text-opacity, 1));
 }
 
 .text-\[\#525B66\] {

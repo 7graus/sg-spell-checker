@@ -58,6 +58,7 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
   ) => {
     const [warningCharsVisible, setWarningCharsVisible] = useState(true);
     const [warningUsageVisible, setWarningUsageVisible] = useState(true);
+    const [processedErrors, setProcessedErrors] = useState<TextError[]>([]);
     const editorRef = useRef<HTMLDivElement>(null);
     const defaultSubmitButtonRef = useRef<HTMLButtonElement>(null);
     const { editorHeight } = useEditorHeight({
@@ -306,6 +307,11 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
           .deleteRange({ from, to })
           .run();
 
+        // Update processed errors
+        setProcessedErrors(prev => prev.filter(error => 
+          !(error.start === from - 1 && error.end === to - 1)
+        ));
+
         handleCloseCard();
 
         // Check if there are any remaining errors
@@ -320,6 +326,11 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
         const { from, to } = hoveredError.range;
         const errorType = hoveredError.type === 'spelling' ? 'spellingError' : 'grammarError';
         editor.chain().focus().setTextSelection({ from, to }).unsetMark(errorType).run();
+
+        // Update processed errors
+        setProcessedErrors(prev => prev.filter(error => 
+          !(error.start === from - 1 && error.end === to - 1)
+        ));
 
         handleCloseCard();
       }
@@ -417,7 +428,7 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
 
       editor?.commands.unsetAllMarks();
       const lastPositionMap = new Map<string, number>();
-      const processedErrors: TextError[] = [];
+      const newProcessedErrors: TextError[] = [];
       const errors = resultErrors.errors;
       const originalText = editor?.getText() || '';
 
@@ -426,7 +437,7 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
       preferredErrors.forEach((error) => {
         const wordAtPosition = originalText.slice(error.start, error.end);
         if (wordAtPosition === error.word) {
-          processedErrors.push(error);
+          newProcessedErrors.push(error);
         } else {
           const lastPos = lastPositionMap.get(error.word) || 0;
           const newPosition = findWordPosition(error.word, lastPos);
@@ -434,7 +445,7 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
             error.start = newPosition;
             error.end = newPosition + error.word.length;
             lastPositionMap.set(error.word, newPosition + 1);
-            processedErrors.push(error);
+            newProcessedErrors.push(error);
           }
         }
       });
@@ -443,7 +454,7 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
       const otherErrors = errors.filter((error) => error.source !== preferedErrorSource);
       otherErrors.forEach((error) => {
         // Check if this error overlaps with any preferred error
-        const overlapsWithPreferred = processedErrors.some((processedError) => {
+        const overlapsWithPreferred = newProcessedErrors.some((processedError) => {
           if (processedError.source !== preferedErrorSource) return false;
           
           const errorEnd = error.start + error.word.length;
@@ -459,7 +470,7 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
         if (!overlapsWithPreferred) {
           const wordAtPosition = originalText.slice(error.start, error.end);
           if (wordAtPosition === error.word) {
-            processedErrors.push(error);
+            newProcessedErrors.push(error);
           } else {
             const lastPos = lastPositionMap.get(error.word) || 0;
             const newPosition = findWordPosition(error.word, lastPos);
@@ -467,13 +478,15 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
               error.start = newPosition;
               error.end = newPosition + error.word.length;
               lastPositionMap.set(error.word, newPosition + 1);
-              processedErrors.push(error);
+              newProcessedErrors.push(error);
             }
           }
         }
       });
 
-      processedErrors.forEach((error) => {
+      setProcessedErrors(newProcessedErrors);
+
+      newProcessedErrors.forEach((error) => {
         markErrorInEditor(error);
       });
     };
@@ -658,8 +671,14 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
 
             {resultErrors && (
               <div className="flex flex-row gap-10 items-end pr-4">
-                <InfoErrors resultErrors={resultErrors} type="spelling" />
-                <InfoErrors resultErrors={resultErrors} type="grammar" />
+                <InfoErrors 
+                  quantity={processedErrors.filter((error) => error.type === 'spelling').length} 
+                  type="spelling" 
+                />
+                <InfoErrors 
+                  quantity={processedErrors.filter((error) => error.type === 'grammar').length} 
+                  type="grammar" 
+                />
               </div>
             )}
           </div>

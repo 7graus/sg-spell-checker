@@ -91,6 +91,7 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
       }
 
       const dataJson = await response.json();
+
       const data = dataJson.data;
 
       if (data.errors) {
@@ -176,7 +177,7 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
             />
           )}
           {results && results.errors.length > 0 && (
-            <AcceptAllButton isDisabled={isDisabled} handleAcceptAll={handleAcceptAll} />
+            <AcceptAllButton successMessage={false} isDisabled={isDisabled} handleAcceptAll={handleAcceptAll} />
           )}
           {(!results || results.errors.length === 0) && (
             <SubmitButton
