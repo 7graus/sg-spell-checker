@@ -1571,10 +1571,6 @@ video {
   padding-left: 0.5rem;
 }
 
-.pl-3 {
-  padding-left: 0.75rem;
-}
-
 .pl-4 {
   padding-left: 1rem;
 }
@@ -2312,8 +2308,8 @@ video {
     display: none;
   }
 
-  .md\:max-h-\[100vh\] {
-    max-height: 100vh;
+  .md\:max-h-\[85vh\] {
+    max-height: 85vh;
   }
 
   .md\:min-h-\[165px\] {

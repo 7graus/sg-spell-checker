@@ -31,10 +31,10 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
   const [logId, setLogId] = useState<string | null>(null);
   const { usageCount, maxUsage, incrementUsage, isLimitReached } = useUsage(tag);
   const { isPro } = useAuthContext();
-  const [editorValue, setEditorValue] = useState('');
-  // const [editorValue, setEditorValue] = useState(
-  //   'Seja para corrigir e-meils profissionais, trabalhos acadêmicos, mensagens importantes ou qalquer outro tipo de texto, nossa ferramenta é a escolha ideal. Com tecnologia avançada de IA, identificamos erros ortográficos, gramaticais e oferecemos sugestões precisas de coreção.'
-  // );
+  // const [editorValue, setEditorValue] = useState('');
+  const [editorValue, setEditorValue] = useState(
+    'Seja para corrigir e-meils profissionais, trabalhos acadêmicos, mensagens importantes ou qalquer outro tipo de texto, nossa ferramenta é a escolha ideal. Com tecnologia avançada de IA, identificamos erros ortográficos, gramaticais e oferecemos sugestões precisas de coreção.'
+  );
   const { isMobile } = useResponsive();
   const submitButtonRef = useRef<HTMLButtonElement>(null);
   const editorRef = useRef<{ handleAcceptAll: () => void }>(null);

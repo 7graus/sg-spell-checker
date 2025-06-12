@@ -608,11 +608,11 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
 
           <div
             ref={editorRef}
-            className={`tiptap-editor overflow-hidden w-full h-full min-h-[30vh] md:min-h-[50vh] md:max-h-[100vh] flex bg-white rounded-md pl-3 py-2 focus:outline-none prose prose-sm max-w-none relative ${
+            className={`tiptap-editor overflow-hidden w-full h-full min-h-[30vh] md:min-h-[50vh] md:max-h-[85vh] flex bg-white rounded-md pl-4 py-4 focus:outline-none prose prose-sm max-w-none relative ${
               disabled ? 'opacity-50 cursor-not-allowed' : ''
             }`}
             style={{
-              maxHeight: isMobile ? undefined : '80vh',
+              maxHeight: isMobile ? undefined : '70vh',
               height: editorHeight ? `${editorHeight}px` : undefined,
             }}
             tabIndex={0}
