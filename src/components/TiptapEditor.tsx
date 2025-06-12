@@ -593,7 +593,7 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
     }));
 
     return (
-      <div className="w-full h-full md:py-2 md:pl-4 md:pr-1 border-b border-gray-border-secondary relative">
+      <div className="w-full h-full md:py-4 md:pl-4 md:pr-1 border-b border-gray-border-secondary relative">
         <div className="relative h-full flex flex-col justify-between">
           <div className="absolute top-2 right-2 flex flex-col gap-3 z-[1]">
             {value && (
@@ -608,7 +608,7 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
 
           <div
             ref={editorRef}
-            className={`tiptap-editor overflow-hidden w-full h-full min-h-[30vh] md:min-h-[50vh] md:max-h-[85vh] flex bg-white rounded-md pl-4 py-4 focus:outline-none prose prose-sm max-w-none relative ${
+            className={`tiptap-editor overflow-hidden w-full h-full min-h-[30vh] md:min-h-[50vh] md:max-h-[85vh] flex bg-white rounded-md focus:outline-none prose prose-sm max-w-none relative ${
               disabled ? 'opacity-50 cursor-not-allowed' : ''
             }`}
             style={{
@@ -678,18 +678,16 @@ export const TiptapEditor = React.forwardRef<{ handleAcceptAll: () => void }, Ti
               </div>
             )}
 
-            {resultErrors && (
-              <div className="flex flex-row gap-10 items-end pr-4">
-                <InfoErrors 
-                  quantity={processedErrors.filter((error) => error.type === 'spelling').length} 
-                  type="spelling" 
-                />
-                <InfoErrors 
-                  quantity={processedErrors.filter((error) => error.type === 'grammar').length} 
-                  type="grammar" 
-                />
-              </div>
-            )}
+            <div className={`flex flex-row gap-10 items-end pr-4 transition-opacity duration-300 ${resultErrors?.errors?.length && resultErrors?.errors?.length > 0 ? 'opacity-100' : 'opacity-0'}`}>
+              <InfoErrors 
+                quantity={processedErrors.filter((error) => error.type === 'spelling').length} 
+                type="spelling" 
+              />
+              <InfoErrors 
+                quantity={processedErrors.filter((error) => error.type === 'grammar').length} 
+                type="grammar" 
+              />
+            </div>
           </div>
 
           
