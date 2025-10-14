@@ -9,6 +9,7 @@ import { useAuthContext } from '../hooks/useAuthContext';
 import { ConversionPopup } from './ConversionPopup';
 import { UserFeedback } from './user-feedback/UserFeedback';
 import { AcceptAllButton } from './buttons/AcceptAllButton';
+import analytics from '../lib/analytics';
 
 interface SgSpellCheckerProps {
   endpoint: string;
@@ -30,7 +31,7 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
   const [loading, setLoading] = useState(false);
   const [logId, setLogId] = useState<string | null>(null);
   const { usageCount, maxUsage, incrementUsage, isLimitReached } = useUsage(tag);
-  const { isPro } = useAuthContext();
+  const { isPro, isLogged } = useAuthContext();
   const [editorValue, setEditorValue] = useState('');
   // const [editorValue, setEditorValue] = useState(
   //   'Seja para corrigir e-meils profissionais, trabalhos acadêmicos, mensagens importantes ou qalquer outro tipo de texto, nossa ferramenta é a escolha ideal. Com tecnologia avançada de IA, identificamos erros ortográficos, gramaticais e oferecemos sugestões precisas de coreção.'
@@ -90,6 +91,8 @@ export const SgSpellChecker: React.FC<SgSpellCheckerProps> = ({
     }
 
     try {
+      analytics.toolUsage({ usageCount, maxUsage, isPro, isAuthenticated: isLogged });
+      
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
